@@ -1,6 +1,7 @@
 .gradle
 /build/
-
+/celebrator/
+/.idea/
 # Ignore Gradle GUI config
 gradle-app.setting
 

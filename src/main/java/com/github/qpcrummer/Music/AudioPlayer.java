@@ -1,21 +1,12 @@
 package com.github.qpcrummer.Music;
 
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.ImageProcessingException;
-import com.drew.imaging.wav.WavMetadataReader;
-import com.drew.metadata.Directory;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.MetadataReader;
-import com.drew.metadata.Tag;
-
 import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import static com.github.qpcrummer.Directories.Directories.current_song_list;
-import static com.github.qpcrummer.GUI.MainGUI.looping;
-import static com.github.qpcrummer.GUI.MainGUI.play;
+import static com.github.qpcrummer.GUI.MainGUI.*;
 import static com.github.qpcrummer.Main.*;
 
 public class AudioPlayer {
@@ -51,6 +42,10 @@ public class AudioPlayer {
         // set status
         status = "paused";
 
+        // set music_bar
+        music_bar.setMaximum(clip.getFrameLength());
+        music_bar.setString("00:00" + "/" + timeCalc(clip.getMicrosecondLength()));
+
         // start thread
         thread.scheduleAtFixedRate(() -> {
             if (clip.getFrameLength() <= clip.getLongFramePosition() && !thread_halt) {
@@ -64,6 +59,10 @@ public class AudioPlayer {
                         throw new RuntimeException(e);
                     }
                 }
+            }
+            if (clip != null) {
+                music_bar.setValue(Math.toIntExact(clip.getLongFramePosition()));
+                music_bar.setString(timeCalc(clip.getMicrosecondPosition()) + "/" + timeCalc(clip.getMicrosecondLength()));
             }
         }, 0,1, TimeUnit.MILLISECONDS);
     }

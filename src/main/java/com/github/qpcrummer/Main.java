@@ -8,9 +8,11 @@ import javax.swing.event.ListSelectionListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static com.github.qpcrummer.Directories.Directories.*;
 import static com.github.qpcrummer.GUI.MainGUI.*;
@@ -80,5 +82,26 @@ public class Main {
 
     public static String path2Name(Path path) {
         return songAsFile(path).getName().replace(".wav", "").replace("_", " ");
+    }
+
+    public static String timeCalc(long microseconds) {
+        int seconds = (int) TimeUnit.MICROSECONDS.toSeconds(microseconds);
+        Calendar time_format = new Calendar.Builder().build();
+        time_format.set(Calendar.SECOND, seconds);
+
+        String second;
+        if (time_format.get(Calendar.SECOND) <= 9) {
+            second = 0 + String.valueOf(time_format.get(Calendar.SECOND));
+        } else {
+            second = String.valueOf(time_format.get(Calendar.SECOND));
+        }
+
+        String min;
+        if (time_format.get(Calendar.MINUTE) <= 9) {
+            min = 0 + String.valueOf(time_format.get(Calendar.MINUTE));
+        } else {
+            min = String.valueOf(time_format.get(Calendar.MINUTE));
+        }
+        return min + ":" + second;
     }
 }

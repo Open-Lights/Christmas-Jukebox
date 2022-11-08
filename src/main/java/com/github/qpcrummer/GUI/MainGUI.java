@@ -26,6 +26,7 @@ public class MainGUI {
     public static JPanel control = new JPanel();
     public static JPanel top = new JPanel();
     public static JPanel multitop = new JPanel();
+    public static JPanel multibottom = new JPanel();
     public static JButton play = new JButton("Play");
     public static JButton skip = new JButton("Skip");
     public static JButton rewind = new JButton("Rewind");
@@ -42,6 +43,7 @@ public class MainGUI {
     public static JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
     public static JSeparator separator1 = new JSeparator(SwingConstants.HORIZONTAL);
     public static JScrollPane music_scroll = new JScrollPane();
+    public static JProgressBar music_bar = new JProgressBar();
     public static boolean looping;
 
     public static void initGUI() throws IOException {
@@ -97,11 +99,15 @@ public class MainGUI {
         playlistframe.add(mainplaylistpanel);
         mainplaylistpanel.setLayout(new BorderLayout());
         mainplaylistpanel.add(top, BorderLayout.PAGE_START);
-        mainplaylistpanel.add(control, BorderLayout.PAGE_END);
+        mainplaylistpanel.add(multibottom, BorderLayout.PAGE_END);
         mainplaylistpanel.add(music_scroll, BorderLayout.CENTER);
 
         top.add(multitop);
         top.add(separator);
+
+        multibottom.setLayout(new BoxLayout(multibottom, BoxLayout.Y_AXIS));
+        multibottom.add(music_bar);
+        multibottom.add(control);
 
         multitop.add(nowplaying);
         multitop.add(back);
@@ -121,10 +127,14 @@ public class MainGUI {
         volume_slider.setMajorTickSpacing(20);
 
         music_scroll.setViewportView(visible_song_list);
+        music_scroll.getVerticalScrollBar().setPreferredSize(new Dimension(30, Integer.MAX_VALUE));
 
         visible_song_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         visible_song_list.setLayoutOrientation(JList.VERTICAL);
         visible_song_list.setFixedCellHeight(40);
+
+        music_bar.setValue(0);
+        music_bar.setStringPainted(true);
 
         //Action Listeners
 
