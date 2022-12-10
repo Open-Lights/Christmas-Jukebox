@@ -1,27 +1,28 @@
 package com.github.qpcrummer;
 
-import com.github.qpcrummer.Music.AudioPlayer;
+import com.github.qpcrummer.directories.Song;
+import com.github.qpcrummer.music.AudioPlayer;
 
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.event.ListSelectionListener;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static com.github.qpcrummer.Directories.Directories.*;
-import static com.github.qpcrummer.GUI.MainGUI.*;
-import static com.github.qpcrummer.Music.AudioPlayer.initMusic;
-import static com.github.qpcrummer.Music.AudioPlayer.skip;
+import static com.github.qpcrummer.directories.Directories.createDirectories;
+import static com.github.qpcrummer.directories.Directories.string2Song;
+import static com.github.qpcrummer.gui.MainGUI.*;
+import static com.github.qpcrummer.music.AudioPlayer.initMusic;
+import static com.github.qpcrummer.music.AudioPlayer.skip;
 
 public class Main {
 
-    public static int song_playing = 0;
+    public static int song_playing;
     public static int song_list_size;
 
     public static Path current_song;
@@ -29,36 +30,38 @@ public class Main {
     public static final ScheduledExecutorService thread = Executors.newScheduledThreadPool(1);
 
     public static boolean thread_halt;
-    public static ListSelectionListener l;
-    public static HashMap<String, File> stored_data = new HashMap<>();
-    public static HashMap<String, String> stored_authors = new HashMap<>();
+    public static ListSelectionListener listener;
+    public static ArrayList<Song> current_songs = new ArrayList<>();
 
-    public static void main(String[] args) throws IOException {
+    public static void main(final String[] args) {
         createDirectories();
-        populateHashMap();
         initGUI();
     }
 
-    public static void musicSetup(Path current_song) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
+    /**
+     * Initializes methods needed to start playing music
+     * @param current_song The path of the song currently being played
+     */
+    public static void musicSetup(final Path current_song) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
         AudioPlayer.filePath = String.valueOf(current_song);
-        nowplaying.setText("Now Playing " + songAsFile(current_song).getName().replace(".wav", "").replace("_", " "));
+        nowplaying.setText("Now Playing " + current_songs.get(song_playing).formatted_name);
         initMusic();
 
         // Song list action listeners
-        l = e -> {
+        listener = e -> {
             try {
-                song_playing = string2Song(visible_song_list.getSelectedValue().split(" by ")[0]);
+                song_playing = string2Song(visible_song_list.getSelectedValue());
                 skip();
             } catch (IOException | UnsupportedAudioFileException | LineUnavailableException ex) {
                 throw new RuntimeException(ex);
             }
         };
 
-        visible_song_list.removeListSelectionListener(l);
+        visible_song_list.removeListSelectionListener(listener);
         
-        visible_song_list.setSelectedValue(int2Name(song_playing) + " by " + stored_authors.get(path2Name(current_song_list.get(song_playing))), true);
+        visible_song_list.setSelectedValue(current_songs.get(song_playing).title, true);
 
-        visible_song_list.addListSelectionListener(l);
+        visible_song_list.addListSelectionListener(listener);
 
         // Prepare for next song
         if (song_playing == song_list_size - 1) {
@@ -68,25 +71,14 @@ public class Main {
         }
     }
 
-    public static File songAsFile(Path path) {
-        return new File(String.valueOf(path));
-    }
-
-    public static int string2Song(String name) throws IOException {
-        return current_song_list.indexOf(stored_data.get(name).toPath());
-    }
-
-    public static String int2Name(int number) {
-        return path2Name(current_song_list.get(number));
-    }
-
-    public static String path2Name(Path path) {
-        return songAsFile(path).getName().replace(".wav", "").replace("_", " ");
-    }
-
-    public static String timeCalc(long microseconds) {
-        int seconds = (int) TimeUnit.MICROSECONDS.toSeconds(microseconds);
-        Calendar time_format = new Calendar.Builder().build();
+    /**
+     * Correctly format the progress bar
+     * @param microseconds Current position of the song in microseconds
+     * @return The formatted time
+     */
+    public static String timeCalc(final long microseconds) {
+        final int seconds = (int) TimeUnit.MICROSECONDS.toSeconds(microseconds);
+        final Calendar time_format = new Calendar.Builder().build();
         time_format.set(Calendar.SECOND, seconds);
 
         String second;
