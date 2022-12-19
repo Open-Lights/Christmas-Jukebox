@@ -282,7 +282,6 @@ public class MainGUI {
         playlistframe.setVisible(true);
     }
 
-    //TODO Make volume slider more usable
     /**
      * Calculates the volume for the slider
      */

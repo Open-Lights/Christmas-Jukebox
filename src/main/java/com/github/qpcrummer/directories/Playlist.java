@@ -45,6 +45,6 @@ public class Playlist {
      * @return The path of the playlist
      */
     private Path playlist2Path(String playlist) {
-        return Paths.get(music + "\\" + playlist);
+        return Paths.get(music + "/" + playlist);
     }
 }
