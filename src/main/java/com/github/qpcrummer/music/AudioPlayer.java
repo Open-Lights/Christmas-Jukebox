@@ -1,6 +1,7 @@
 package com.github.qpcrummer.music;
 
 import javax.sound.sampled.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;

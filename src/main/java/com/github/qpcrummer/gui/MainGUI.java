@@ -1,10 +1,12 @@
 package com.github.qpcrummer.gui;
 
 import com.github.qpcrummer.directories.Playlist;
+import com.github.qpcrummer.lights.LightsDebug;
 
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicProgressBarUI;
 import javax.swing.plaf.basic.BasicSliderUI;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -36,6 +38,7 @@ public class MainGUI {
     public static JButton mute = new JButton("Mute");
     public static JButton shuffle = new JButton("Shuffle");
     public static JButton back = new JButton("Back");
+    public static JButton lights_debug = new JButton("Lights Debug");
     public static JButton[] playlist_buttons;
     public static JLabel nowplaying = new JLabel();
     public static JLabel playlist_label = new JLabel("Select a Playlist");
@@ -93,12 +96,17 @@ public class MainGUI {
                 try {
                     reloadPlaylistGUI();
                     musicSetup(current_song = current_songs.get(song_playing).path);
-
                 } catch (IOException | LineUnavailableException | UnsupportedAudioFileException ex) {
                     throw new RuntimeException(ex);
                 }
             });
         }
+
+        //Lights Configuration
+        mainpanel.add(lights_debug);
+        lights_debug.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lights_debug.setMinimumSize(dimension);
+        lights_debug.addActionListener(e -> LightsDebug.initLightGUI());
 
         //Configuration
         playlist_label.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -146,6 +154,10 @@ public class MainGUI {
 
         music_bar.setValue(0);
         music_bar.setStringPainted(true);
+        music_bar.setUI(new BasicProgressBarUI() {
+            protected Color getSelectionBackground() { return Color.black; }
+        });
+        music_bar.setForeground(new Color(0,100,0));
 
         //Action Listeners
 
@@ -275,8 +287,13 @@ public class MainGUI {
      * Calculates the volume for the slider
      */
     public static void calcVolume() {
-        final double percentage = volume_slider.getValue() * 0.01;
-        final double new_volume = 80 * percentage - 80;
+        double slider_value = volume_slider.getValue();
+        double new_volume;
+        if (slider_value == 0) {
+            new_volume = -80;
+        } else {
+            new_volume = 30 * Math.log10(slider_value) - 60;
+        }
         volume.setValue((float) new_volume);
     }
 }
