@@ -15,7 +15,10 @@ public class LightsDebug {
 
         panel.add(flashing_lights_test);
 
-        flashing_lights_test.addActionListener(e -> new Flash());
+        flashing_lights_test.addActionListener(e -> {
+            flashing_lights_test.setVisible(false);
+            new Flash();
+        });
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setMinimumSize(new Dimension(600, 400));
         frame.pack();
