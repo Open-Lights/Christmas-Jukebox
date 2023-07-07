@@ -1,13 +1,15 @@
 package com.github.qpcrummer.music;
 
+
+import com.github.qpcrummer.gui.AudioVisualizer;
+
 import javax.sound.sampled.*;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import static com.github.qpcrummer.gui.MainGUI.*;
 import static com.github.qpcrummer.Main.*;
+import static com.github.qpcrummer.gui.MainGUI.*;
 
 public class AudioPlayer {
 
@@ -75,6 +77,9 @@ public class AudioPlayer {
     {
         //start the clip
         clip.start();
+
+        AudioVisualizer visualizer = new AudioVisualizer(filePath);
+        visualizer.setVisible(true);
 
         status = "play";
         play.setText("Playing");

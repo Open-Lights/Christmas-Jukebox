@@ -1,6 +1,7 @@
 package com.github.qpcrummer;
 
 import com.github.qpcrummer.directories.Song;
+import com.github.qpcrummer.gui.AudioVisualizer;
 import com.github.qpcrummer.music.AudioPlayer;
 
 import javax.sound.sampled.LineUnavailableException;

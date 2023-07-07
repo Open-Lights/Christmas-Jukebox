@@ -1,7 +1,5 @@
 package com.github.qpcrummer.lights;
 
-import com.github.qpcrummer.lights.utils.Flash;
-
 import javax.swing.*;
 import java.awt.*;
 
@@ -17,7 +15,6 @@ public class LightsDebug {
 
         flashing_lights_test.addActionListener(e -> {
             flashing_lights_test.setVisible(false);
-            new Flash();
         });
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setMinimumSize(new Dimension(600, 400));
