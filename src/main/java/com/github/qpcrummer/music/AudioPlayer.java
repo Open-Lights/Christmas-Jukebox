@@ -1,6 +1,7 @@
 package com.github.qpcrummer.music;
 
 
+import com.github.qpcrummer.Main;
 import com.github.qpcrummer.gui.AudioVisualizer;
 
 import javax.sound.sampled.*;
@@ -77,9 +78,6 @@ public class AudioPlayer {
     {
         //start the clip
         clip.start();
-
-        AudioVisualizer visualizer = new AudioVisualizer(filePath);
-        visualizer.setVisible(true);
 
         status = "play";
         play.setText("Playing");
