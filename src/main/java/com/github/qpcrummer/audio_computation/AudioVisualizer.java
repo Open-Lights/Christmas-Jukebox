@@ -39,8 +39,6 @@ public class AudioVisualizer extends JFrame {
 
     public static double[] magnitudes = new double[height];
 
-    public static TempRecorder recorder;
-
     public static ImageViewer iv;
 
     public static String song = "Vivaldi.wav";
@@ -52,27 +50,13 @@ public class AudioVisualizer extends JFrame {
         return instance;
     }
 
-    private AudioVisualizer(){
+    private AudioVisualizer() {
         instance = this;
         initWindow();
         calculateBins();
-        if (VisualizerInit.mode.equals("player"))
-            startPlaying();
-        else
-            startRecording();
     }
 
-    private void startRecording(){
-        recorder = new TempRecorder();
-
-        Thread recordThread = new Thread(() -> {
-            System.out.println("started recording...");
-            recorder.start();
-        });
-        recordThread.start();
-    }
-
-    private void startPlaying(){
+    public void startPlaying(){
         TempPlayer player = new TempPlayer();
         Thread thread = new Thread(player::start);
 
@@ -134,6 +118,7 @@ public class AudioVisualizer extends JFrame {
         }
 
         iv = new ImageViewer(image);
+        instance.repaint();
     }
 
     private static void shiftImageLeft(int pixelAmount){
@@ -204,7 +189,6 @@ public class AudioVisualizer extends JFrame {
             public void windowClosing(WindowEvent e) {
                 super.windowClosing(e);
                 TempPlayer.running = false;
-                TempRecorder.running = false;
             }
         });
 

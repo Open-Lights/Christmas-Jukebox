@@ -42,10 +42,10 @@ public class FFTTracker {
 
             while ((bread = in.read(bytes)) != -1 && running){
 
-                samples = unpack(bytes, transfer, samples, bread, audioFormat);
+                unpack(bytes, transfer, samples, bread, audioFormat);
                 //samples = window(samples, bread / normalBytes, audioFormat);
                 //samples = hanning(samples, bread / normalBytes, audioFormat);
-                samples = hamming(samples, bread / normalBytes, audioFormat);
+                hamming(samples, bread / normalBytes, audioFormat);
 
                 AudioVisualizer.drawSpectrum2(samples);
 
@@ -94,7 +94,7 @@ public class FFTTracker {
          * check the format for each sample.
          *
          * a helper array (transfer) allows the logic to be split up but without
-         * being too repetetive.
+         * being too repetitive.
          *
          * here there are two loops converting bytes to raw long samples.
          * integral primitives in Java get sign extended when they are promoted

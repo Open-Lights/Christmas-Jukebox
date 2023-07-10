@@ -1,8 +1,7 @@
 package com.github.qpcrummer.music;
 
-
-import com.github.qpcrummer.Main;
-import com.github.qpcrummer.gui.AudioVisualizer;
+import com.github.qpcrummer.audio_computation.AudioVisualizer;
+import com.github.qpcrummer.audio_computation.VisualizerInit;
 
 import javax.sound.sampled.*;
 import java.io.File;
@@ -77,7 +76,12 @@ public class AudioPlayer {
     public static void play()
     {
         //start the clip
-        clip.start();
+        // TODO Redo this
+        //clip.start();
+        AudioVisualizer.song = "carol-of-the-bells.wav";
+        AudioVisualizer.path = filePath.replace("carol-of-the-bells.wav", "");
+
+        VisualizerInit.view.startPlaying();
 
         status = "play";
         play.setText("Playing");
