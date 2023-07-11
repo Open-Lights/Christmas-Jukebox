@@ -20,42 +20,39 @@ import java.util.Objects;
 
 import static com.github.qpcrummer.directories.Directories.*;
 import static com.github.qpcrummer.Main.*;
-import static com.github.qpcrummer.music.AudioPlayer.*;
 
 public class MainGUI {
-    public static JFrame mainframe = new JFrame("Christmas Celebrator");
-    public static JFrame playlistframe = new JFrame("Christmas Celebrator");
-    public static JPanel mainplaylistpanel = new JPanel();
-    public static JPanel mainpanel = new JPanel();
-    public static JPanel control = new JPanel();
-    public static JPanel top = new JPanel();
-    public static JPanel multitop = new JPanel();
-    public static JPanel multibottom = new JPanel();
-    public static JButton play = new JButton("Play");
-    public static JButton skip = new JButton("Skip");
-    public static JButton rewind = new JButton("Rewind");
-    public static JCheckBox loop = new JCheckBox("Loop");
-    public static JButton mute = new JButton("Mute");
-    public static JButton shuffle = new JButton("Shuffle");
-    public static JButton back = new JButton("Back");
-    public static JButton lights_debug = new JButton("Lights Debug");
-    public static JButton[] playlist_buttons;
-    public static JLabel nowplaying = new JLabel();
-    public static JLabel playlist_label = new JLabel("Select a Playlist");
-    public static JSlider volume_slider = new JSlider(SwingConstants.HORIZONTAL, 0, 100, 100);
-    public static DefaultListModel<String> song_list = new DefaultListModel<>();
-    public static JList<String> visible_song_list = new JList<>(song_list);
-    public static JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-    public static JSeparator separator1 = new JSeparator(SwingConstants.HORIZONTAL);
-    public static JScrollPane music_scroll = new JScrollPane();
-    public static JProgressBar music_bar = new JProgressBar();
-    public static boolean looping;
-    private static final Dimension dimension = new Dimension(mainframe.getWidth(), 100);
+    private final JFrame mainframe = new JFrame("Christmas Celebrator");
+    private final JFrame playlistframe = new JFrame("Christmas Celebrator");
+    private final JPanel mainplaylistpanel = new JPanel();
+    private final JPanel mainpanel = new JPanel();
+    private final JPanel control = new JPanel();
+    private final JPanel top = new JPanel();
+    private final JPanel multitop = new JPanel();
+    private final JPanel multibottom = new JPanel();
+    private final JButton play = new JButton("Play");
+    private final JButton skip = new JButton("Skip");
+    private final JButton rewind = new JButton("Rewind");
+    private final JCheckBox loop = new JCheckBox("Loop");
+    private final JButton mute = new JButton("Mute");
+    private final JButton shuffle = new JButton("Shuffle");
+    private final JButton back = new JButton("Back");
+    public JButton[] playlist_buttons;
+    private final JLabel nowplaying = new JLabel();
+    private final JLabel playlist_label = new JLabel("Select a Playlist");
+    private final JSlider volume_slider = new JSlider(SwingConstants.HORIZONTAL, 0, 100, 100);
+    private final DefaultListModel<String> song_list = new DefaultListModel<>();
+    private final JList<String> visible_song_list = new JList<>(song_list);
+    private final JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
+    private final JSeparator separator1 = new JSeparator(SwingConstants.HORIZONTAL);
+    private final JScrollPane music_scroll = new JScrollPane();
+    private final JProgressBar music_bar = new JProgressBar();
+    private final Dimension dimension = new Dimension(mainframe.getWidth(), 100);
 
     /**
      * The main bulk of the GUI code
      */
-    public static void initGUI() {
+    public void initGUI() {
         //Main GUI
         mainframe.add(mainpanel);
         mainpanel.setLayout(new BoxLayout(mainpanel, BoxLayout.Y_AXIS));
@@ -272,7 +269,7 @@ public class MainGUI {
     /**
      * Resets the Song List
      */
-    public static void reloadPlaylistGUI() {
+    private void reloadPlaylistGUI() {
         for (int i = 0; i < song_list_size; i++) {
             final String name = current_songs.get(i).title;
             song_list.addElement(name);
@@ -285,7 +282,7 @@ public class MainGUI {
     /**
      * Calculates the volume for the slider
      */
-    public static void calcVolume() {
+    private void calcVolume() {
         double slider_value = volume_slider.getValue();
         double new_volume;
         if (slider_value == 0) {

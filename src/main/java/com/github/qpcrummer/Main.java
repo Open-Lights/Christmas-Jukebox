@@ -72,30 +72,4 @@ public class Main {
             song_playing++;
         }
     }
-
-    /**
-     * Correctly format the progress bar
-     * @param microseconds Current position of the song in microseconds
-     * @return The formatted time
-     */
-    public static String timeCalc(final long microseconds) {
-        final int seconds = (int) TimeUnit.MICROSECONDS.toSeconds(microseconds);
-        final Calendar time_format = new Calendar.Builder().build();
-        time_format.set(Calendar.SECOND, seconds);
-
-        String second;
-        if (time_format.get(Calendar.SECOND) <= 9) {
-            second = 0 + String.valueOf(time_format.get(Calendar.SECOND));
-        } else {
-            second = String.valueOf(time_format.get(Calendar.SECOND));
-        }
-
-        String min;
-        if (time_format.get(Calendar.MINUTE) <= 9) {
-            min = 0 + String.valueOf(time_format.get(Calendar.MINUTE));
-        } else {
-            min = String.valueOf(time_format.get(Calendar.MINUTE));
-        }
-        return min + ":" + second;
-    }
 }

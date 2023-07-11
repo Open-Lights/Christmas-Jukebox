@@ -1,4 +1,6 @@
-package com.github.qpcrummer.audio_computation;
+package com.github.qpcrummer.computation;
+
+import com.github.qpcrummer.audio_computation.AudioVisualizer;
 
 import java.io.File;
 
