@@ -7,9 +7,11 @@ import com.github.qpcrummer.gui.FFTDebugGUI;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
+import javax.swing.event.ListSelectionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,10 +30,16 @@ public class WAVPlayer {
     private final List<Song> playList;
     private Song currentSong;
     private int index;
-    public WAVPlayer(@Nullable FFTDebugGUI debugGUI, @NotNull JProgressBar bar, List<Song> playList) {
+    private final JList<Song> songJList;
+    private final ListSelectionListener listener;
+    private final JFrame parent;
+    public WAVPlayer(@Nullable FFTDebugGUI debugGUI, @NotNull JProgressBar bar, List<Song> playList, @NotNull JList<Song> songJList, ListSelectionListener songJListListener, JFrame parent) {
         this.debugGUI = debugGUI;
         this.progressBar = bar;
         this.playList = playList;
+        this.songJList = songJList;
+        this.listener = songJListListener;
+        this.parent = parent;
     }
 
     /**
@@ -40,6 +48,8 @@ public class WAVPlayer {
     public void play(Song song) {
         // Create AudioInputStream and Clip Objects
         this.currentSong = song;
+        this.updateSelectedValue();
+        this.parent.setTitle("Playing " + song.title);
         String wavPath = String.valueOf(song.path);
         try {
             this.audioInputStream = AudioSystem.getAudioInputStream(new File(wavPath).getAbsoluteFile());
@@ -95,6 +105,7 @@ public class WAVPlayer {
         this.wavClip = null;
         this.playing = false;
         this.currentPosition = 0L;
+        this.index = 0;
     }
 
     /**
@@ -103,6 +114,34 @@ public class WAVPlayer {
     public void skip() {
         this.stop();
         this.play(this.getNextSong());
+    }
+
+    /**
+     * Restarts a Clip from the beginning
+     */
+    public void rewind() {
+        this.pause();
+        this.currentPosition = 0L;
+        this.resume();
+    }
+
+    /**
+     * Mixes up the order of Songs
+     */
+    public void shuffle() {
+        this.stop();
+        Collections.shuffle(this.playList);
+        this.play(this.getCurrentSong());
+    }
+
+    /**
+     * Injected Song when clicked on in the JLIst
+     * @param song Song clicked on
+     */
+    public void songOverride(Song song) {
+        this.stop();
+        this.index = this.playList.indexOf(song);
+        this.play(song);
     }
 
     /**
@@ -157,6 +196,15 @@ public class WAVPlayer {
                 updateProgressBar();
             }
         }, 0, 1, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Updates the selected index of the JList
+     */
+    private void updateSelectedValue() {
+        this.songJList.removeListSelectionListener(this.listener);
+        this.songJList.setSelectedValue(this.getCurrentSong(), true);
+        this.songJList.addListSelectionListener(this.listener);
     }
 
     // Info Methods
@@ -218,6 +266,9 @@ public class WAVPlayer {
      * @return Returns the current song
      */
     public Song getCurrentSong() {
+        if (currentSong == null) {
+            currentSong = this.playList.get(this.index);
+        }
         return this.currentSong;
     }
 
@@ -227,5 +278,19 @@ public class WAVPlayer {
      */
     public Clip getWavClip() {
         return this.wavClip;
+    }
+
+    /**
+     * Calculates the volume based on slider
+     * @param sliderValue JSlider value
+     */
+    public void calcVolume(double sliderValue) {
+        double new_volume;
+        if (sliderValue == 0) {
+            new_volume = -80;
+        } else {
+            new_volume = 30 * Math.log10(sliderValue) - 60;
+        }
+        this.volume.setValue((float) new_volume);
     }
 }
