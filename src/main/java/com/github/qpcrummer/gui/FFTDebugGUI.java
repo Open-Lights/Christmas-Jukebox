@@ -3,8 +3,10 @@ package com.github.qpcrummer.gui;
 import com.github.qpcrummer.audio_computation.Complex;
 import com.github.qpcrummer.computation.FFT;
 import com.github.qpcrummer.audio_computation.ImageViewer;
-import com.github.qpcrummer.audio_computation.TempPlayer;
+import com.github.qpcrummer.computation.FFTTracker;
+import com.github.qpcrummer.directories.Song;
 
+import javax.sound.sampled.AudioInputStream;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -25,9 +27,8 @@ public class FFTDebugGUI extends JFrame {
     private double[] frequencyBins;
     private final double[] magnitudes = new double[128];
 
-    private String path;
-
     private final Thread thread;
+    private final FFTTracker tracker = new FFTTracker();
     public FFTDebugGUI(Thread thread) {
         this.thread = thread;
         init();
@@ -55,7 +56,7 @@ public class FFTDebugGUI extends JFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 super.windowClosing(e);
-                TempPlayer.running = false;
+                FFTTracker.running = false;
             }
         });
         this.setMinimumSize(new Dimension(320, 128));
@@ -64,10 +65,10 @@ public class FFTDebugGUI extends JFrame {
 
     /**
      * Starts the FFT tracking
-     * @param wavPath Path of the WAV file including the filename.wav
+     * @param song Currently playing song
      */
-    public void startTracking(String wavPath) {
-        path = wavPath;
+    public void startTracking(AudioInputStream inputStream) {
+        this.tracker.start(inputStream,this);
     }
 
     /**
@@ -91,7 +92,7 @@ public class FFTDebugGUI extends JFrame {
      * Draws the Spectrograph on the DebugGUI
      * @param samples audio samples from the WAV file
      */
-    private void drawSpectrograph(float[] samples) {
+    public void drawSpectrograph(float[] samples) {
         Complex[] data = new Complex[samples.length];
         for (int i = 0; i < samples.length; i++){
             data[i] = new Complex(samples[i], 0);
@@ -165,7 +166,7 @@ public class FFTDebugGUI extends JFrame {
      */
     private void calculateBins() {
         double maxFreq = 22050;
-        double division = (double) TempPlayer.DEF_BUFFER_SAMPLE_SZ /2;
+        double division = (double) FFTTracker.DEF_BUFFER_SAMPLE_SZ /2;
         double time = division /maxFreq;
         double minFreq = 1/time;
 

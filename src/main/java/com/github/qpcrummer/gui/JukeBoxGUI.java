@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class JukeBoxGUI extends JFrame {
     private final List<Song> songs;
@@ -82,11 +83,13 @@ public class JukeBoxGUI extends JFrame {
         music_scroll.getVerticalScrollBar().setPreferredSize(new Dimension(30, Integer.MAX_VALUE));
 
         // WAV Player
+        AtomicReference<WAVPlayer> wavReference = new AtomicReference<>();
         ListSelectionListener listSelectionListener = e -> {
-            this.wavPlayer.songOverride(visibleSongList.getSelectedValue());
+            wavReference.get().songOverride(visibleSongList.getSelectedValue());
             play.setText("Pause");
         };
         this.wavPlayer = new WAVPlayer(null, music_bar, this.songs, visibleSongList, listSelectionListener, this);
+        wavReference.set(this.wavPlayer);
 
         // Configuration
         nowplaying.setFont(new Font("Serif", Font.BOLD, 20));

@@ -1,8 +1,6 @@
 package com.github.qpcrummer.computation;
 
-import com.github.qpcrummer.audio_computation.AudioVisualizer;
-
-import java.io.File;
+import com.github.qpcrummer.gui.FFTDebugGUI;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -15,16 +13,13 @@ public class FFTTracker {
 
     public static volatile boolean running = false;
 
-    public void start(){
+    public void start(AudioInputStream in, FFTDebugGUI gui){
         running = true;
-        AudioInputStream in = null;
         SourceDataLine out = null;
         try {
 
-            File audioFile = new File(AudioVisualizer.path + AudioVisualizer.song);
-            final AudioFormat audioFormat = (AudioSystem.getAudioFileFormat(audioFile).getFormat());
+            final AudioFormat audioFormat = in.getFormat();
 
-            in = AudioSystem.getAudioInputStream(audioFile);
             out = AudioSystem.getSourceDataLine(audioFormat);
 
             final int normalBytes = normalBytesFromBits(audioFormat.getSampleSizeInBits());
@@ -49,7 +44,7 @@ public class FFTTracker {
                 //samples = hanning(samples, bread / normalBytes, audioFormat);
                 hamming(samples, bread / normalBytes, audioFormat);
 
-                AudioVisualizer.drawSpectrum2(samples);
+                gui.drawSpectrograph(samples);
 
                 out.write(bytes, 0, bread);
             }

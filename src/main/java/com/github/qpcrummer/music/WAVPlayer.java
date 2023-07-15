@@ -60,7 +60,7 @@ public class WAVPlayer {
         // Start DebugGUI
         // TODO Implement more DebugGUI workings
         if (this.debugGUI != null) {
-            this.debugGUI.startTracking(wavPath);
+            this.debugGUI.startTracking(this.audioInputStream);
         }
         // Set Volume
         this.volume = (FloatControl) this.wavClip.getControl(FloatControl.Type.VOLUME);
@@ -148,7 +148,9 @@ public class WAVPlayer {
      * Increments the ProgressBar
      */
     private void updateProgressBar() {
-        this.progressBar.setValue(Math.toIntExact(this.wavClip.getLongFramePosition()));
+        int pos = Math.toIntExact(this.wavClip.getMicrosecondPosition());
+        int length = Math.toIntExact(this.wavClip.getMicrosecondLength());
+        this.progressBar.setValue(pos/length);
         this.progressBar.setString(formatTime(this.wavClip.getMicrosecondPosition()) + "/" + formatTime(this.wavClip.getMicrosecondLength()));
     }
 
