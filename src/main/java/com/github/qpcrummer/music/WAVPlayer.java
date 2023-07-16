@@ -14,6 +14,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -25,7 +26,7 @@ public class WAVPlayer {
     private FloatControl volume;
     private boolean playing;
     private boolean looping;
-    private final ScheduledExecutorService thread = Executors.newScheduledThreadPool(1);
+    private ScheduledExecutorService thread = Executors.newScheduledThreadPool(1);
     private final JProgressBar progressBar;
     private final List<Song> playList;
     private Song currentSong;
@@ -54,6 +55,7 @@ public class WAVPlayer {
         try {
             this.audioInputStream = AudioSystem.getAudioInputStream(new File(wavPath).getAbsoluteFile());
             this.wavClip = AudioSystem.getClip();
+            this.wavClip.open();
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             e.printStackTrace();
         }
@@ -63,7 +65,7 @@ public class WAVPlayer {
             this.debugGUI.startTracking(this.audioInputStream);
         }
         // Set Volume
-        this.volume = (FloatControl) this.wavClip.getControl(FloatControl.Type.VOLUME);
+        this.volume = (FloatControl) this.wavClip.getControl(FloatControl.Type.MASTER_GAIN);
         // Start Song Update Thread
         if (!playing) {
             startThread();
@@ -99,13 +101,14 @@ public class WAVPlayer {
      * Cancels and resets the audio clip
      */
     public void stop() {
-        this.thread.shutdownNow();
-        this.wavClip.stop();
-        this.wavClip.close();
+        if (playing) {
+            this.thread.shutdownNow();
+            this.wavClip.stop();
+            this.wavClip.close();
+        }
         this.wavClip = null;
         this.playing = false;
         this.currentPosition = 0L;
-        this.index = 0;
     }
 
     /**
@@ -130,6 +133,7 @@ public class WAVPlayer {
      */
     public void shuffle() {
         this.stop();
+        this.index = 0;
         Collections.shuffle(this.playList);
         this.play(this.getCurrentSong());
     }
@@ -184,20 +188,28 @@ public class WAVPlayer {
      * Starts the WAV Watcher Thread
      */
     private void startThread() {
-        this.thread.scheduleAtFixedRate(() -> {
-            if (this.wavClip.getFrameLength() <= this.wavClip.getLongFramePosition()) {
-                if (looping) {
-                    this.wavClip.setFramePosition(0);
-                    this.resume();
-                } else {
-                    skip();
-                }
-            }
+        if (this.thread.isShutdown()) {
+            this.thread = Executors.newScheduledThreadPool(1);
+        }
 
-            if (this.isWavLoaded()) {
-                updateProgressBar();
-            }
-        }, 0, 1, TimeUnit.MILLISECONDS);
+        try {
+            thread.scheduleAtFixedRate(() -> {
+                if (this.wavClip.getFrameLength() <= this.wavClip.getLongFramePosition()) {
+                    if (this.looping) {
+                        this.wavClip.setFramePosition(0);
+                        this.resume();
+                    } else {
+                        this.skip();
+                    }
+                }
+
+                if (this.isWavLoaded()) {
+                    updateProgressBar();
+                }
+            }, 0, 1, TimeUnit.MILLISECONDS);
+        } catch (RejectedExecutionException e) {
+            System.err.println("Task scheduling rejected. Executor is shutdown or unable to accept new tasks.");
+        }
     }
 
     /**

@@ -66,7 +66,6 @@ public class FFTTracker {
                 out.close();
             }
         }
-        return;
     }
 
     public static int normalBytesFromBits(int bitsPerSample) {
@@ -188,7 +187,7 @@ public class FFTTracker {
          * most basic window function multiply the window against a sine curve,
          * tapers ends
          *
-         * nested loops here show a paradigm for processing multi-channel
+         * nested loops here show a paradigm for processing multichannel
          * formats the interleaved samples can be processed "in place" inner
          * loop processes individual channels using an offset
          *

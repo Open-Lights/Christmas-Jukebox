@@ -14,12 +14,13 @@ public class PlaylistGUI extends JFrame {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setTitle("Christmas Jukebox");
         JPanel panel = new JPanel();
+        this.add(panel);
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
         JLabel instructions = new JLabel("Select The Playlists You Want");
         panel.add(instructions);
 
-        JButton select = new JButton("Select");
+        JButton select = new JButton("Finish Selection");
         select.addActionListener(e -> {
             if (!this.selectedPlaylists.isEmpty()) {
                 new JukeBoxGUI(Directories.combinePlaylists(this.selectedPlaylists));
@@ -36,7 +37,7 @@ public class PlaylistGUI extends JFrame {
         List<Playlist> playlists = Directories.listPlaylists();
         for (Playlist playlist : playlists) {
             JCheckBox checkBox = new JCheckBox(playlist.name);
-            checkBox.addChangeListener(e -> {
+            checkBox.addActionListener(e -> {
                 if (checkBox.isSelected()) {
                     this.selectedPlaylists.add(playlist);
                 } else  {

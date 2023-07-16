@@ -65,7 +65,7 @@ public class FFTDebugGUI extends JFrame {
 
     /**
      * Starts the FFT tracking
-     * @param song Currently playing song
+     * @param inputStream InputStream for currently playing Song
      */
     public void startTracking(AudioInputStream inputStream) {
         this.tracker.start(inputStream,this);

@@ -144,7 +144,7 @@ public class JukeBoxGUI extends JFrame {
             play.setText("Pause");
         });
 
-        loop.addChangeListener(e -> this.wavPlayer.setLooping(loop.isSelected()));
+        loop.addActionListener(e -> this.wavPlayer.setLooping(loop.isSelected()));
 
         shuffle.addActionListener(e -> {
             this.wavPlayer.shuffle();

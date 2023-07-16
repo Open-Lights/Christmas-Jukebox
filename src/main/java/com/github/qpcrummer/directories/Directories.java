@@ -26,7 +26,6 @@ public class Directories {
             if (Files.notExists(music)) {
                 Files.createDirectory(music);
             }
-            listPlaylists();
         } catch(IOException ignored) {
         }
     }
