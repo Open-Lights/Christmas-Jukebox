@@ -1,6 +1,6 @@
 package com.github.qpcrummer.computation;
 
-import com.github.qpcrummer.audio_computation.Complex;
+import com.github.qpcrummer.gui_addons.Complex;
 
 public class FFT {
 

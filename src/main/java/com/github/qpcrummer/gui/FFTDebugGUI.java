@@ -1,10 +1,9 @@
 package com.github.qpcrummer.gui;
 
-import com.github.qpcrummer.audio_computation.Complex;
+import com.github.qpcrummer.gui_addons.Complex;
+import com.github.qpcrummer.gui_addons.ImageViewer;
 import com.github.qpcrummer.computation.FFT;
-import com.github.qpcrummer.audio_computation.ImageViewer;
 import com.github.qpcrummer.computation.FFTTracker;
-import com.github.qpcrummer.directories.Song;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.swing.*;

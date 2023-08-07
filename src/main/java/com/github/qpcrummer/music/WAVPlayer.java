@@ -55,7 +55,7 @@ public class WAVPlayer {
         try {
             this.audioInputStream = AudioSystem.getAudioInputStream(new File(wavPath).getAbsoluteFile());
             this.wavClip = AudioSystem.getClip();
-            this.wavClip.open();
+            this.wavClip.open(audioInputStream);
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             e.printStackTrace();
         }

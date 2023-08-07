@@ -198,7 +198,7 @@ public class FFTTracker {
 
         for (int ch = 0, k, i; ch < channels; ch++) {
             for (i = ch, k = 0; i < svalid; i += channels) {
-                samples[i] *= Math.sin(Math.PI * k++ / (slen - 1));
+                samples[i] *= (float) Math.sin(Math.PI * k++ / (slen - 1));
             }
         }
 

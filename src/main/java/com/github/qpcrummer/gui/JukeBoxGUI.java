@@ -29,6 +29,8 @@ public class JukeBoxGUI extends JFrame {
                 dispose();
             }
         });
+
+
         // Main Panel
         JPanel panel = new JPanel();
         this.add(panel);

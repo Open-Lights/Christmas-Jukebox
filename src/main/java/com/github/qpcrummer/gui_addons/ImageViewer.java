@@ -1,4 +1,4 @@
-package com.github.qpcrummer.audio_computation;
+package com.github.qpcrummer.gui_addons;
 
 import javax.swing.*;
 import java.awt.*;
