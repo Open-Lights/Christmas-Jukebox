@@ -17,6 +17,7 @@ public class Song {
     public final Path path;
     public final String author;
     public final String title;
+    public Path beatPath;
 
     public Song(String name, Path path) {
         this.name = name;

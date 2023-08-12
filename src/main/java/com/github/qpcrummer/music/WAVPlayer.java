@@ -2,6 +2,8 @@ package com.github.qpcrummer.music;
 
 import com.drew.lang.annotations.NotNull;
 import com.drew.lang.annotations.Nullable;
+import com.github.qpcrummer.beat.BeatThreadManager;
+import com.github.qpcrummer.beat.BeatTranslator;
 import com.github.qpcrummer.directories.Song;
 import com.github.qpcrummer.gui.FFTDebugGUI;
 
@@ -34,6 +36,7 @@ public class WAVPlayer {
     private final JList<Song> songJList;
     private final ListSelectionListener listener;
     private final JFrame parent;
+    private final BeatThreadManager beatThreadManager;
     public WAVPlayer(@Nullable FFTDebugGUI debugGUI, @NotNull JProgressBar bar, List<Song> playList, @NotNull JList<Song> songJList, ListSelectionListener songJListListener, JFrame parent) {
         this.debugGUI = debugGUI;
         this.progressBar = bar;
@@ -41,6 +44,8 @@ public class WAVPlayer {
         this.songJList = songJList;
         this.listener = songJListListener;
         this.parent = parent;
+        // Beats
+        this.beatThreadManager = new BeatThreadManager(this, new BeatTranslator());
     }
 
     /**
@@ -64,6 +69,8 @@ public class WAVPlayer {
         if (this.debugGUI != null) {
             this.debugGUI.startTracking(this.audioInputStream);
         }
+        // Start Beat Thread
+        this.beatThreadManager.startThread();
         // Set Volume
         this.volume = (FloatControl) this.wavClip.getControl(FloatControl.Type.MASTER_GAIN);
         // Start Song Update Thread
@@ -82,6 +89,7 @@ public class WAVPlayer {
      */
     public void resume() {
         this.startThread();
+        this.beatThreadManager.resumeThread();
         this.wavClip.setMicrosecondPosition(this.currentPosition);
         this.wavClip.start();
         this.playing = true;
@@ -92,6 +100,7 @@ public class WAVPlayer {
      */
     public void pause() {
         this.thread.shutdown();
+        this.beatThreadManager.pauseThread();
         this.currentPosition = wavClip.getMicrosecondPosition();
         this.wavClip.stop();
         this.playing = false;
@@ -103,6 +112,7 @@ public class WAVPlayer {
     public void stop() {
         if (playing) {
             this.thread.shutdownNow();
+            this.beatThreadManager.stopThread();
             this.wavClip.stop();
             this.wavClip.close();
         }

@@ -26,7 +26,9 @@ public class Playlist {
         try (Stream<Path> walk = Files.walk(this.path)) {
             walk.filter(Files::isRegularFile).forEach(file -> {
                 File song = file.toFile();
-                this.songs.add(new Song(song.getName(), Path.of(song.getPath())));
+                Song newSong = new Song(song.getName(), Path.of(song.getPath()));
+                this.songs.add(newSong);
+                createBeatsFolder(newSong);
             });
         } catch (IOException e) {
             e.printStackTrace();
@@ -42,5 +44,21 @@ public class Playlist {
             createSongArrayList();
         }
         return this.songs;
+    }
+
+    /**
+     * Creates and sets the Path for beat files
+     * @param song Song class
+     */
+    private void createBeatsFolder(Song song) {
+        Path songBeatPath = Path.of(Directories.beats + "/" + song.name.replace(".wav", ""));
+        if (Files.notExists(songBeatPath)) {
+            try {
+                Files.createDirectory(songBeatPath);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        song.beatPath = songBeatPath;
     }
 }

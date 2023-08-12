@@ -13,6 +13,7 @@ public class Directories {
 
     public static Path music = Paths.get("celebrator/music");
     public static Path main = Paths.get("celebrator");
+    public static Path beats = Paths.get("celebrator/beats");
 
     /**
      * Creates all the directories needed for this application
@@ -25,6 +26,9 @@ public class Directories {
             }
             if (Files.notExists(music)) {
                 Files.createDirectory(music);
+            }
+            if (Files.notExists(Directories.beats)) {
+                Files.createDirectory(Directories.beats);
             }
         } catch(IOException ignored) {
         }
