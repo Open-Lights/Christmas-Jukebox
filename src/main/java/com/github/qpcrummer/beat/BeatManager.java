@@ -1,6 +1,7 @@
 package com.github.qpcrummer.beat;
 
 import com.github.qpcrummer.directories.Song;
+import com.github.qpcrummer.music.WAVPlayer;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -9,12 +10,23 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Stream;
 
-public class BeatTranslator {
+public class BeatManager {
+    private final WAVPlayer player;
+    private ScheduledExecutorService executorService;
     private final List<ChannelIdentifier> channels = new ArrayList<>();
     private Song lastSong;
+    public BeatManager(WAVPlayer player) {
+        this.player = player;
+    }
 
+    /**
+     * Finds and Reads all beat txt files
+     * @param song current Song playing
+     */
     public void readBeats(Song song) {
         if (song != lastSong) {
             channels.clear();
@@ -43,13 +55,33 @@ public class BeatTranslator {
             while ((line = reader.readLine()) != null) {
                 beats.add(Long.parseLong(line, 16));
             }
-            channels.add(new ChannelIdentifier(filePath.toFile().getName(), beats));
-        } catch (IOException e) {
+            if (this.executorService == null) {
+                this.executorService = Executors.newSingleThreadScheduledExecutor();
+            }
+            channels.add(new ChannelIdentifier(filePath.toFile().getName(), beats, this.executorService, this.player));
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public List<ChannelIdentifier> getChannels() {
-        return this.channels;
+    /**
+     * Starts testing for beats every ms
+     */
+    public void startBeatTracking() {
+        if (!this.channels.isEmpty()) {
+            for (ChannelIdentifier channel : channels) {
+                channel.checkIfBeat();
+            }
+        }
+    }
+
+    /**
+     * Completely stops the Thread and sends it off to the GC
+     */
+    public void stopThread() {
+        if (executorService != null) {
+            executorService.shutdownNow();
+        }
+        executorService = null;
     }
 }
