@@ -1,10 +1,8 @@
 package com.github.qpcrummer.music;
 
 import com.drew.lang.annotations.NotNull;
-import com.drew.lang.annotations.Nullable;
 import com.github.qpcrummer.beat.BeatManager;
 import com.github.qpcrummer.directories.Song;
-import com.github.qpcrummer.gui.FFTDebugGUI;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
@@ -20,7 +18,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class WAVPlayer {
-    private final FFTDebugGUI debugGUI;
     private Clip wavClip;
     private long currentPosition;
     private AudioInputStream audioInputStream;
@@ -36,8 +33,7 @@ public class WAVPlayer {
     private final ListSelectionListener listener;
     private final JFrame parent;
     private final BeatManager beatManager;
-    public WAVPlayer(@Nullable FFTDebugGUI debugGUI, @NotNull JProgressBar bar, List<Song> playList, @NotNull JList<Song> songJList, ListSelectionListener songJListListener, JFrame parent) {
-        this.debugGUI = debugGUI;
+    public WAVPlayer(@NotNull JProgressBar bar, List<Song> playList, @NotNull JList<Song> songJList, ListSelectionListener songJListListener, JFrame parent) {
         this.progressBar = bar;
         this.playList = playList;
         this.songJList = songJList;
@@ -53,7 +49,6 @@ public class WAVPlayer {
     public void play(Song song) {
         // Create AudioInputStream and Clip Objects
         this.currentSong = song;
-        this.beatManager.readBeats(song);
         this.updateSelectedValue();
         this.parent.setTitle("Playing " + song.title);
         String wavPath = String.valueOf(song.path);
@@ -64,11 +59,6 @@ public class WAVPlayer {
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             e.printStackTrace();
         }
-        // Start DebugGUI
-        // TODO Implement more DebugGUI workings
-        if (this.debugGUI != null) {
-            this.debugGUI.startTracking(this.audioInputStream);
-        }
         // Set Volume
         this.volume = (FloatControl) this.wavClip.getControl(FloatControl.Type.MASTER_GAIN);
         // Start Song Update Thread
@@ -77,6 +67,8 @@ public class WAVPlayer {
             // Set Playing True
             this.playing = true;
         }
+
+        this.beatManager.readBeats(song);
 
         // Start the Music!!!
         this.wavClip.start();

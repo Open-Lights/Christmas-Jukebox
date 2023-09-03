@@ -90,7 +90,7 @@ public class JukeBoxGUI extends JFrame {
             wavReference.get().songOverride(visibleSongList.getSelectedValue());
             play.setText("Pause");
         };
-        this.wavPlayer = new WAVPlayer(null, music_bar, this.songs, visibleSongList, listSelectionListener, this);
+        this.wavPlayer = new WAVPlayer(music_bar, this.songs, visibleSongList, listSelectionListener, this);
         wavReference.set(this.wavPlayer);
 
         // Configuration
