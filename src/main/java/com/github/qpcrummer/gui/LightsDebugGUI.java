@@ -13,7 +13,7 @@ public class LightsDebugGUI extends JFrame {
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
     public LightsDebugGUI() {
-        setTitle("Box Color Toggle");
+        setTitle("Light Debug GUI");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(400, 300);
 

@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 public class BeatManager {
     private final WAVPlayer player;
-    private ScheduledExecutorService executorService;
+    private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();;
     private final List<ChannelIdentifier> channels = new ArrayList<>();
     private Song lastSong;
     public BeatManager(WAVPlayer player) {
@@ -55,9 +55,6 @@ public class BeatManager {
             while ((line = reader.readLine()) != null) {
                 beats.add(Long.parseLong(line, 16));
             }
-            if (this.executorService == null) {
-                this.executorService = Executors.newSingleThreadScheduledExecutor();
-            }
             channels.add(new ChannelIdentifier(filePath.toFile().getName(), beats, this.executorService, this.player));
         } catch (Exception e) {
             e.printStackTrace();
@@ -83,5 +80,24 @@ public class BeatManager {
             executorService.shutdownNow();
         }
         executorService = null;
+    }
+
+    /**
+     * Resets the indexes of all channels
+     */
+    public void resetBeats() {
+        if (!this.channels.isEmpty()) {
+            for (ChannelIdentifier channel : channels) {
+                channel.reset();
+            }
+        }
+    }
+
+    /**
+     * Gets the Beat ScheduledExecutorService so that other threads can schedule tasks
+     * @return ScheduledExecutorService
+     */
+    public ScheduledExecutorService getBeatExecutor() {
+        return this.executorService;
     }
 }

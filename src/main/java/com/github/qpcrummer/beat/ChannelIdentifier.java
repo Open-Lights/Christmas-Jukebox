@@ -3,7 +3,6 @@ package com.github.qpcrummer.beat;
 import com.github.qpcrummer.Main;
 import com.github.qpcrummer.music.WAVPlayer;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -52,12 +51,9 @@ public class ChannelIdentifier {
                 long beat = beats.get(index);
                 int difference = (int) ((beat - player.getWavClip().getMicrosecondPosition()) / 1000);
                 isSleeping = true;
-                System.out.println("WAIT (ms): " + difference + ", Executor: " + this.executor);
 
                 this.executor.schedule(() -> {
-                    System.out.println("boop");
                     if (player.getWavClip().getMicrosecondPosition() >= beat) {
-                        System.out.println("Beat on Channels: " + Arrays.toString(channels));
                         Main.lightsDebugGUI.blinkBoxes(channels);
                         index++;
                     }
@@ -66,7 +62,12 @@ public class ChannelIdentifier {
                 }, difference, TimeUnit.MILLISECONDS);
             }
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
+    }
+
+    public void reset() {
+        this.index = 0;
+        checkIfBeat();
     }
 }

@@ -24,7 +24,7 @@ public class JukeBoxGUI extends JFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 super.windowClosing(e);
-                wavPlayer.stop();
+                wavPlayer.shutDown();
                 new PlaylistGUI();
                 dispose();
             }
@@ -154,7 +154,7 @@ public class JukeBoxGUI extends JFrame {
         });
 
         back.addActionListener(e -> {
-            this.wavPlayer.stop();
+            this.wavPlayer.shutDown();
             new PlaylistGUI();
             this.dispose();
         });
