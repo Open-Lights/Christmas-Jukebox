@@ -50,10 +50,21 @@ public class BeatManager {
 
     private void readBeatsFromFile(Path filePath) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath.toFile()))) {
-            final List<Long> beats = new ArrayList<>();
+            final List<Object> beats = new ArrayList<>();
             String line;
             while ((line = reader.readLine()) != null) {
-                beats.add(Long.parseLong(line, 16));
+
+                if (line.contains("[")) {
+                    String[] elements = line.replaceAll("[\\[\\]]", "").split(",\\s*");
+
+                    long[] longArray = new long[elements.length];
+                    for (int i = 0; i < elements.length; i++) {
+                        longArray[i] = Long.parseLong(elements[i], 16);
+                    }
+                    beats.add(longArray);
+                } else {
+                    beats.add(Long.parseLong(line, 16));
+                }
             }
             channels.add(new ChannelIdentifier(filePath.toFile().getName(), beats, this.executorService, this.player));
         } catch (Exception e) {

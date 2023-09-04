@@ -21,7 +21,7 @@ public class LightsDebugGUI extends JFrame {
         boxes = new Box[16];
 
         for (int i = 0; i < 16; i++) {
-            boxes[i] = new Box(i + 1);
+            boxes[i] = new Box(i);
             mainPanel.add(boxes[i]);
         }
 
@@ -29,15 +29,19 @@ public class LightsDebugGUI extends JFrame {
         setVisible(true);
     }
 
-    public void blinkBoxes(int[] channels) {
+    public void blinkBoxes(int[] channels, int blinkDuration) {
+        if (blinkDuration == 0) {
+            blinkDuration = 50;
+        }
+
         for (int num : channels) {
-            blink(boxes[num]);
+            blink(boxes[num], blinkDuration);
         }
     }
 
-    private void blink(Box box) {
+    private void blink(Box box, int delay) {
         box.toggleColor();
-        executorService.schedule(box::toggleColor, 50, TimeUnit.MILLISECONDS);
+        executorService.schedule(box::toggleColor, delay, TimeUnit.MILLISECONDS);
     }
 
     private static class Box extends JLabel {

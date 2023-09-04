@@ -3,18 +3,21 @@ package com.github.qpcrummer.beat;
 import com.github.qpcrummer.Main;
 import com.github.qpcrummer.music.WAVPlayer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ChannelIdentifier {
     public final int[] channels;
-    public final List<Long> beats;
+    public final List<Object> beats;
     private final ScheduledExecutorService executor;
     private final WAVPlayer player;
     private boolean isSleeping;
     private int index;
-    public ChannelIdentifier(String fileName, List<Long> beats, ScheduledExecutorService executor, WAVPlayer player) {
+    public ChannelIdentifier(String fileName, List<Object> beats, ScheduledExecutorService executor, WAVPlayer player) {
         this.channels = extractIntArray(fileName);
         this.beats = beats;
         this.executor = executor;
@@ -22,21 +25,21 @@ public class ChannelIdentifier {
     }
 
     private int[] extractIntArray(String input) {
-        StringBuilder digitString = new StringBuilder();
+        Pattern pattern = Pattern.compile("\\d+");
+        Matcher matcher = pattern.matcher(input);
 
-        for (char c : input.toCharArray()) {
-            if (Character.isDigit(c)) {
-                digitString.append(c);
-            }
+        ArrayList<Integer> numberList = new ArrayList<>();
+        while (matcher.find()) {
+            int number = Integer.parseInt(matcher.group());
+            numberList.add(number);
         }
 
-        int[] intArray = new int[digitString.length()];
-
-        for (int i = 0; i < digitString.length(); i++) {
-            intArray[i] = Character.getNumericValue(digitString.charAt(i));
+        int[] numbers = new int[numberList.size()];
+        for (int i = 0; i < numberList.size(); i++) {
+            numbers[i] = numberList.get(i);
         }
 
-        return intArray;
+        return numbers;
     }
 
     /**
@@ -48,13 +51,24 @@ public class ChannelIdentifier {
                 if (index >= beats.size()) {
                     return;
                 }
-                long beat = beats.get(index);
+                Object preBeat = beats.get(index);
+                long beat;
+                int holdDuration;
+
+                if (preBeat instanceof long[] array) {
+                    beat = array[0];
+                    holdDuration = (int) (array[1] - beat);
+                } else {
+                    holdDuration = 0;
+                    beat = (long)preBeat;
+                }
                 int difference = (int) ((beat - player.getWavClip().getMicrosecondPosition()) / 1000);
+
                 isSleeping = true;
 
                 this.executor.schedule(() -> {
                     if (player.getWavClip().getMicrosecondPosition() >= beat) {
-                        Main.lightsDebugGUI.blinkBoxes(channels);
+                        Main.lightsDebugGUI.blinkBoxes(channels, holdDuration);
                         index++;
                     }
                     isSleeping = false;
