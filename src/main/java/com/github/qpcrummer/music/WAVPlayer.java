@@ -1,6 +1,7 @@
 package com.github.qpcrummer.music;
 
 import com.drew.lang.annotations.NotNull;
+import com.github.qpcrummer.Main;
 import com.github.qpcrummer.beat.BeatManager;
 import com.github.qpcrummer.directories.Song;
 
@@ -31,7 +32,7 @@ public class WAVPlayer {
     private int progressBarIndex;
     private String cachedFinalTimeStamp;
     private int songLengthSeconds;
-    public WAVPlayer(@NotNull JProgressBar bar, List<Song> playList, @NotNull JList<Song> songJList, ListSelectionListener songJListListener, JFrame parent) {
+    public WAVPlayer(@NotNull final JProgressBar bar, final List<Song> playList, @NotNull final JList<Song> songJList, final ListSelectionListener songJListListener, final JFrame parent) {
         this.progressBar = bar;
         this.playList = playList;
         this.songJList = songJList;
@@ -53,18 +54,17 @@ public class WAVPlayer {
     /**
      * Plays the selected clip
      */
-    public void play(Song song) {
+    public void play(final Song song) {
         // Create AudioInputStream and Clip Objects
         this.currentSong = song;
         this.updateSelectedValue();
         this.parent.setTitle("Playing " + song.title);
-        String wavPath = String.valueOf(song.path);
-        try {
-            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(wavPath).getAbsoluteFile());
+        final String wavPath = String.valueOf(song.path);
+        try (final AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(wavPath).getAbsoluteFile())) {
             this.wavClip = AudioSystem.getClip();
             this.wavClip.open(audioInputStream);
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-            e.printStackTrace();
+            Main.logger.warning("AudioSystem failed to start!");
         }
         // Set Volume
         this.volume = (FloatControl) this.wavClip.getControl(FloatControl.Type.MASTER_GAIN);
@@ -105,6 +105,7 @@ public class WAVPlayer {
         this.wavClip.setMicrosecondPosition(this.currentPosition);
         this.wavClip.start();
         this.playing = true;
+        this.beatManager.onResume();
     }
 
     /**
@@ -124,6 +125,7 @@ public class WAVPlayer {
             this.wavClip.stop();
             this.wavClip.close();
         }
+        // TODO This probably doesn't need to be set to null
         this.wavClip = null;
         this.playing = false;
         this.currentPosition = 0L;
@@ -153,6 +155,7 @@ public class WAVPlayer {
         this.pause();
         this.currentPosition = 0L;
         this.progressBarIndex = 0;
+        this.beatManager.onRewind();
         this.resume();
     }
 
@@ -170,7 +173,7 @@ public class WAVPlayer {
      * Injected Song when clicked on in the JLIst
      * @param song Song clicked on
      */
-    public void songOverride(Song song) {
+    public void songOverride(final Song song) {
         this.reset();
         this.index = this.playList.indexOf(song);
         this.play(song);
@@ -181,22 +184,22 @@ public class WAVPlayer {
      * @param seconds Current position of the song in seconds
      * @return The formatted time
      */
-    private String formatTime(int seconds) {
-        final Calendar time_format = new Calendar.Builder().build();
-        time_format.set(Calendar.SECOND, seconds);
+    private String formatTime(final int seconds) {
+        final Calendar timeFormat = new Calendar.Builder().build();
+        timeFormat.set(Calendar.SECOND, seconds);
 
         String second;
-        if (time_format.get(Calendar.SECOND) <= 9) {
-            second = 0 + String.valueOf(time_format.get(Calendar.SECOND));
+        if (timeFormat.get(Calendar.SECOND) <= 9) {
+            second = 0 + String.valueOf(timeFormat.get(Calendar.SECOND));
         } else {
-            second = String.valueOf(time_format.get(Calendar.SECOND));
+            second = String.valueOf(timeFormat.get(Calendar.SECOND));
         }
 
         String min;
-        if (time_format.get(Calendar.MINUTE) <= 9) {
-            min = 0 + String.valueOf(time_format.get(Calendar.MINUTE));
+        if (timeFormat.get(Calendar.MINUTE) <= 9) {
+            min = 0 + String.valueOf(timeFormat.get(Calendar.MINUTE));
         } else {
-            min = String.valueOf(time_format.get(Calendar.MINUTE));
+            min = String.valueOf(timeFormat.get(Calendar.MINUTE));
         }
         return min + ":" + second;
     }
@@ -232,7 +235,7 @@ public class WAVPlayer {
      * Enables looping WAV files
      * @param setLooping boolean toggle
      */
-    public void setLooping(boolean setLooping) {
+    public void setLooping(final boolean setLooping) {
         this.looping = setLooping;
     }
 
@@ -242,6 +245,18 @@ public class WAVPlayer {
      */
     public boolean isPlaying() {
         return this.playing;
+    }
+
+    /**
+     * Gets the current position of a paused song
+     * @return current position as a long
+     */
+    public long getCurrentPosition() {
+        if (this.isPlaying()) {
+            return this.getWavClip().getMicrosecondPosition();
+        } else {
+            return this.currentPosition;
+        }
     }
 
     /**
@@ -279,13 +294,13 @@ public class WAVPlayer {
      * Calculates the volume based on slider
      * @param sliderValue JSlider value
      */
-    public void calcVolume(double sliderValue) {
-        double new_volume;
+    public void calcVolume(final double sliderValue) {
+        double newVolume;
         if (sliderValue == 0) {
-            new_volume = -80;
+            newVolume = -80;
         } else {
-            new_volume = 30 * Math.log10(sliderValue) - 60;
+            newVolume = 30 * Math.log10(sliderValue) - 60;
         }
-        this.volume.setValue((float) new_volume);
+        this.volume.setValue((float) newVolume);
     }
 }

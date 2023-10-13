@@ -17,7 +17,7 @@ public class LightsDebugGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(400, 300);
 
-        JPanel mainPanel = new JPanel(new GridLayout(4, 4));
+        final JPanel mainPanel = new JPanel(new GridLayout(4, 4));
         boxes = new Box[16];
 
         for (int i = 0; i < 16; i++) {
@@ -29,17 +29,13 @@ public class LightsDebugGUI extends JFrame {
         setVisible(true);
     }
 
-    public void blinkBoxes(int[] channels, int blinkDuration) {
-        if (blinkDuration == 0) {
-            blinkDuration = 50;
-        }
-
+    public void blinkBoxes(final int[] channels, int blinkDuration) {
         for (int num : channels) {
-            blink(boxes[num], blinkDuration);
+            blink(boxes[num], blinkDuration != 0 ? blinkDuration : 50);
         }
     }
 
-    private void blink(Box box, int delay) {
+    private void blink(final Box box, final int delay) {
         box.toggleColor();
         executorService.schedule(box::toggleColor, delay, TimeUnit.MILLISECONDS);
     }
@@ -47,7 +43,7 @@ public class LightsDebugGUI extends JFrame {
     private static class Box extends JLabel {
         private Color currentColor;
 
-        public Box(int number) {
+        public Box(final int number) {
             setHorizontalAlignment(SwingConstants.CENTER);
             setBorder(BorderFactory.createLineBorder(Color.BLACK));
             setOpaque(true);
@@ -58,14 +54,14 @@ public class LightsDebugGUI extends JFrame {
 
             addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseClicked(MouseEvent e) {
+                public void mouseClicked(final MouseEvent e) {
                     toggleColor();
                 }
             });
         }
 
         public void toggleColor() {
-            currentColor = (currentColor == Color.BLACK) ? Color.BLUE : Color.BLACK;
+            currentColor = (currentColor == Color.BLACK) ? Color.BLUE : Color.BLACK; //NOPMD - suppressed CompareObjectsWithEquals - TODO explain reason for suppression //NOPMD - suppressed CompareObjectsWithEquals - TODO explain reason for suppression
             setBackground(currentColor);
         }
     }

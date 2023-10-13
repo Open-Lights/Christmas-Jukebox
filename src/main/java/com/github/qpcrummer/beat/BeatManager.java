@@ -1,10 +1,10 @@
 package com.github.qpcrummer.beat;
 
+import com.github.qpcrummer.Main;
 import com.github.qpcrummer.directories.Song;
 import com.github.qpcrummer.music.WAVPlayer;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,10 +16,10 @@ import java.util.stream.Stream;
 
 public class BeatManager {
     private final WAVPlayer player;
-    private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();;
+    private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private final List<ChannelIdentifier> channels = new ArrayList<>();
     private Song lastSong;
-    public BeatManager(WAVPlayer player) {
+    public BeatManager(final WAVPlayer player) {
         this.player = player;
     }
 
@@ -27,37 +27,37 @@ public class BeatManager {
      * Finds and Reads all beat txt files
      * @param song current Song playing
      */
-    public void readBeats(Song song) {
-        if (song != lastSong) {
+    public void readBeats(final Song song) {
+        if (!song.equals(this.lastSong)) {
             channels.clear();
 
             try {
-                Path beatDirectory = song.beatPath;
+                final Path beatDirectory = song.beatPath;
                 if (Files.isDirectory(beatDirectory)) {
-                    try (Stream<Path> filesStream = Files.list(beatDirectory)) {
+                    try (final Stream<Path> filesStream = Files.list(beatDirectory)) {
                         filesStream
                                 .filter(Files::isRegularFile)
                                 .forEach(this::readBeatsFromFile);
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                Main.logger.warning("Failed to read beats for Song: " + song.title);
             }
 
             lastSong = song;
         }
     }
 
-    private void readBeatsFromFile(Path filePath) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath.toFile()))) {
+    private void readBeatsFromFile(final Path filePath) {
+        try (BufferedReader reader = Files.newBufferedReader(filePath)) {
             final List<Object> beats = new ArrayList<>();
             String line;
             while ((line = reader.readLine()) != null) {
 
                 if (line.contains("[")) {
-                    String[] elements = line.replaceAll("[\\[\\]]", "").split(",\\s*");
+                    final String[] elements = line.replaceAll("[\\[\\]]", "").split(",\\s*");
 
-                    long[] longArray = new long[elements.length];
+                    final long[] longArray = new long[elements.length];
                     for (int i = 0; i < elements.length; i++) {
                         longArray[i] = Long.parseLong(elements[i], 16);
                     }
@@ -67,8 +67,8 @@ public class BeatManager {
                 }
             }
             channels.add(new ChannelIdentifier(filePath.toFile().getName(), beats, this.executorService, this.player));
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            Main.logger.warning("Failed to read beats from File: " + filePath);
         }
     }
 
@@ -84,12 +84,32 @@ public class BeatManager {
     }
 
     /**
+     * Called when the song is resumed
+     */
+    public void onResume() {
+        for (ChannelIdentifier channel : this.channels) {
+            channel.resume();
+        }
+    }
+
+
+    /**
+     * Called when the song is rewound
+     */
+    public void onRewind() {
+        for (ChannelIdentifier channel : this.channels) {
+            channel.reset();
+        }
+    }
+
+    /**
      * Completely stops the Thread and sends it off to the GC
      */
     public void stopThread() {
         if (executorService != null) {
             executorService.shutdownNow();
         }
+        // TODO This probably doesn't need to be set to null
         executorService = null;
     }
 

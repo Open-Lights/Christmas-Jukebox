@@ -5,6 +5,7 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
+import com.github.qpcrummer.Main;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,18 +14,18 @@ import java.util.Objects;
 
 public class Song {
     public final String name;
-    public final String formatted_name;
+    public final String formattedName;
     public final Path path;
     public final String author;
     public final String title;
     public Path beatPath;
 
-    public Song(String name, Path path) {
+    public Song(final String name, final Path path) {
         this.name = name;
-        this.formatted_name = name.replace(".wav", "").replace("_", " ");
+        this.formattedName = name.replace(".wav", "").replace("_", " ");
         this.path = path;
         this.author = getAuthor();
-        this.title = formatted_name + " by " + this.author;
+        this.title = formattedName + " by " + this.author;
     }
 
     /**
@@ -42,7 +43,7 @@ public class Song {
                 }
             }
         } catch (ImageProcessingException | IOException e) {
-            throw new RuntimeException(e);
+            Main.logger.warning("Failed to read Author metadata for Song: " + this.name);
         }
         return "Unknown";
     }
@@ -53,5 +54,10 @@ public class Song {
      */
     private File songAsFile() {
         return new File(String.valueOf(path));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Song && ((Song) obj).path.equals(this.path);
     }
 }

@@ -4,11 +4,20 @@ import com.github.qpcrummer.directories.Directories;
 import com.github.qpcrummer.gui.LightsDebugGUI;
 import com.github.qpcrummer.gui.PlaylistGUI;
 
+import javax.swing.*;
+import java.util.logging.Logger;
+
 public class Main {
-    public static void main(final String[] args) {
-        Directories.createDirectories();
-        new PlaylistGUI();
+
+    private Main() {
     }
 
-    public static LightsDebugGUI lightsDebugGUI = new LightsDebugGUI();
+    public static final LightsDebugGUI lightsDebugGUI = new LightsDebugGUI();
+    public static final Logger logger = Logger.getLogger("Christmas Celebrator");
+
+    public static void main(final String[] args) {
+        logger.info("Loading Christmas Celebrator");
+        Directories.createDirectories();
+        SwingUtilities.invokeLater(PlaylistGUI::new);
+    }
 }

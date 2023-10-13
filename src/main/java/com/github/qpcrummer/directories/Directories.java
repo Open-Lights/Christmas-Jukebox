@@ -1,5 +1,7 @@
 package com.github.qpcrummer.directories;
 
+import com.github.qpcrummer.Main;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,9 +13,12 @@ import java.util.stream.StreamSupport;
 
 public class Directories {
 
-    public static Path music = Paths.get("celebrator/music");
-    public static Path main = Paths.get("celebrator");
-    public static Path beats = Paths.get("celebrator/beats");
+    private Directories() {
+    }
+
+    public static final Path music = Paths.get("celebrator/music");
+    public static final Path main = Paths.get("celebrator");
+    public static final Path beats = Paths.get("celebrator/beats");
 
     /**
      * Creates all the directories needed for this application
@@ -38,14 +43,14 @@ public class Directories {
      * This method lists all playlists that will be loaded
      */
     public static List<Playlist> listPlaylists() {
-        List<Playlist> playlists = new ArrayList<>();
+        final List<Playlist> playlists = new ArrayList<>();
         try (var stream = Files.newDirectoryStream(music, Files::isDirectory)) {
             StreamSupport.stream(stream.spliterator(), false).forEach(file -> {
-                File playlist = file.toFile();
+                final File playlist = file.toFile();
                 playlists.add(new Playlist(playlist.getName(), Path.of(playlist.getPath())));
             });
         } catch (IOException e) {
-            e.printStackTrace();
+            Main.logger.warning("Playlist path not accessible!");
         }
         return playlists;
     }
@@ -54,8 +59,8 @@ public class Directories {
      * This method combines two or more playlists
      * @param playlists Playlist object
      */
-    public static List<Song> combinePlaylists(List<Playlist> playlists) {
-        List<Song> combined_songs = new ArrayList<>();
+    public static List<Song> combinePlaylists(final List<Playlist> playlists) {
+        final List<Song> combined_songs = new ArrayList<>();
         for (Playlist playlist : playlists) {
             combined_songs.addAll(playlist.getSongs());
         }

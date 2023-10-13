@@ -13,14 +13,14 @@ public class PlaylistGUI extends JFrame {
     public PlaylistGUI() {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setTitle("Christmas Jukebox");
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         this.add(panel);
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        JLabel instructions = new JLabel("Select The Playlists You Want");
+        final JLabel instructions = new JLabel("Select The Playlists You Want");
         panel.add(instructions);
 
-        JButton select = new JButton("Finish Selection");
+        final JButton select = new JButton("Finish Selection");
         select.addActionListener(e -> {
             if (!this.selectedPlaylists.isEmpty()) {
                 new JukeBoxGUI(Directories.combinePlaylists(this.selectedPlaylists));
@@ -30,13 +30,13 @@ public class PlaylistGUI extends JFrame {
         });
         panel.add(select);
 
-        JPanel selection = new JPanel();
+        final JPanel selection = new JPanel();
         selection.setLayout(new BoxLayout(selection, BoxLayout.Y_AXIS));
         panel.add(selection);
 
-        List<Playlist> playlists = Directories.listPlaylists();
+        final List<Playlist> playlists = Directories.listPlaylists();
         for (Playlist playlist : playlists) {
-            JCheckBox checkBox = new JCheckBox(playlist.name);
+            final JCheckBox checkBox = new JCheckBox(playlist.name);
             checkBox.addActionListener(e -> {
                 if (checkBox.isSelected()) {
                     this.selectedPlaylists.add(playlist);
@@ -47,7 +47,7 @@ public class PlaylistGUI extends JFrame {
             selection.add(checkBox);
         }
 
-        JScrollPane scrollPane = new JScrollPane(selection);
+        final JScrollPane scrollPane = new JScrollPane(selection);
         scrollPane.setPreferredSize(new Dimension(200,400));
         panel.add(scrollPane);
 

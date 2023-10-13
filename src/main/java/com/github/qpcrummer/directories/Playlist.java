@@ -1,5 +1,7 @@
 package com.github.qpcrummer.directories;
 
+import com.github.qpcrummer.Main;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,7 +16,7 @@ public class Playlist {
     public final Path path;
     private final List<Song> songs = new ArrayList<>();
 
-    public Playlist(String name, Path path) {
+    public Playlist(final String name, final Path path) {
         this.name = name;
         this.path = path;
     }
@@ -23,15 +25,15 @@ public class Playlist {
      * This method fills the ArrayList that contains all songs in a directory
      */
     private void createSongArrayList() {
-        try (Stream<Path> walk = Files.walk(this.path)) {
+        try (final Stream<Path> walk = Files.walk(this.path)) {
             walk.filter(Files::isRegularFile).forEach(file -> {
-                File song = file.toFile();
-                Song newSong = new Song(song.getName(), Path.of(song.getPath()));
+                final File song = file.toFile();
+                final Song newSong = new Song(song.getName(), Path.of(song.getPath()));
                 this.songs.add(newSong);
                 createBeatsFolder(newSong);
             });
         } catch (IOException e) {
-            e.printStackTrace();
+            Main.logger.warning("File path not accessible!");
         }
     }
 
@@ -50,13 +52,13 @@ public class Playlist {
      * Creates and sets the Path for beat files
      * @param song Song class
      */
-    private void createBeatsFolder(Song song) {
-        Path songBeatPath = Path.of(Directories.beats + "/" + song.name.replace(".wav", ""));
+    private void createBeatsFolder(final Song song) {
+        final Path songBeatPath = Path.of(Directories.beats + "/" + song.name.replace(".wav", ""));
         if (Files.notExists(songBeatPath)) {
             try {
                 Files.createDirectory(songBeatPath);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                Main.logger.warning("Failed to create beats folder for Song: " + song.title);
             }
         }
         song.beatPath = songBeatPath;
