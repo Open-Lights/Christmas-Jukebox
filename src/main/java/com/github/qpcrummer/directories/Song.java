@@ -9,6 +9,8 @@ import com.github.qpcrummer.Main;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 
@@ -33,8 +35,8 @@ public class Song {
      * @return The name of the author
      */
     private String getAuthor() {
-        try {
-            final Metadata metadata = ImageMetadataReader.readMetadata(songAsFile());
+        try (InputStream stream = Files.newInputStream(path)) {
+            final Metadata metadata = ImageMetadataReader.readMetadata(stream);
             for (final Directory directory : metadata.getDirectories()) {
                 for (final Tag tag : directory.getTags()) {
                     if (Objects.equals(tag.getTagName(), "Artist")) {
