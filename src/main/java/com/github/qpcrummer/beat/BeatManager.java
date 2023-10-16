@@ -1,7 +1,7 @@
 package com.github.qpcrummer.beat;
 
 import com.github.qpcrummer.Main;
-import com.github.qpcrummer.directories.Song;
+import com.github.qpcrummer.directories.Directories;
 import com.github.qpcrummer.music.WAVPlayer;
 
 import java.io.BufferedReader;
@@ -18,7 +18,7 @@ public class BeatManager {
     private final WAVPlayer player;
     private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private final List<ChannelIdentifier> channels = new ArrayList<>();
-    private Song lastSong;
+    private int lastSong;
     public BeatManager(final WAVPlayer player) {
         this.player = player;
     }
@@ -27,12 +27,12 @@ public class BeatManager {
      * Finds and Reads all beat txt files
      * @param song current Song playing
      */
-    public void readBeats(final Song song) {
-        if (!song.equals(this.lastSong)) {
+    public void readBeats(final Path song, final int index) {
+        if (index != this.lastSong) {
             channels.clear();
 
             try {
-                final Path beatDirectory = song.beatPath;
+                final Path beatDirectory = Directories.getBeatPath(song);
                 if (Files.isDirectory(beatDirectory)) {
                     try (final Stream<Path> filesStream = Files.list(beatDirectory)) {
                         filesStream
@@ -41,10 +41,10 @@ public class BeatManager {
                     }
                 }
             } catch (IOException e) {
-                Main.logger.warning("Failed to read beats for Song: " + song.title);
+                Main.logger.warning("Failed to read beats for Song: " + song);
             }
 
-            lastSong = song;
+            lastSong = index;
         }
     }
 

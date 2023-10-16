@@ -2,14 +2,10 @@ package com.github.qpcrummer.directories;
 
 import com.github.qpcrummer.Main;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.StreamSupport;
 
 public class Directories {
 
@@ -39,31 +35,23 @@ public class Directories {
         }
     }
 
-    /**
-     * This method lists all playlists that will be loaded
-     */
-    public static List<Playlist> listPlaylists() {
-        final List<Playlist> playlists = new ArrayList<>();
-        try (var stream = Files.newDirectoryStream(music, Files::isDirectory)) {
-            StreamSupport.stream(stream.spliterator(), false).forEach(file -> {
-                final File playlist = file.toFile();
-                playlists.add(new Playlist(playlist.getName(), Path.of(playlist.getPath())));
-            });
-        } catch (IOException e) {
-            Main.logger.warning("Playlist path not accessible!");
+    public static void createBeatDirectory(final Path path) {
+        final Path songBeatPath = Directories.getBeatPath(path);
+        if (Files.notExists(songBeatPath)) {
+            try {
+                Files.createDirectory(songBeatPath);
+            } catch (IOException e) {
+                Main.logger.warning("Failed to create beats folder for Song: " + path);
+            }
         }
-        return playlists;
     }
 
-    /**
-     * This method combines two or more playlists
-     * @param playlists Playlist object
-     */
-    public static List<Song> combinePlaylists(final List<Playlist> playlists) {
-        final List<Song> combined_songs = new ArrayList<>();
-        for (Playlist playlist : playlists) {
-            combined_songs.addAll(playlist.getSongs());
-        }
-        return combined_songs;
+    public static Path getBeatPath(Path songInput) {
+        return Path.of(Directories.beats + "/" + Directories.getFileNameWithoutExtension(songInput));
+    }
+
+    public static String getFileNameWithoutExtension(Path input) {
+        String inputString = input.toString().replace("\\", "/");
+        return inputString.substring(inputString.lastIndexOf("/") + 1).trim().replace(".wav", "");
     }
 }

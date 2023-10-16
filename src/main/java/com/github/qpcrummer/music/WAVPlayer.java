@@ -3,16 +3,16 @@ package com.github.qpcrummer.music;
 import com.drew.lang.annotations.NotNull;
 import com.github.qpcrummer.Main;
 import com.github.qpcrummer.beat.BeatManager;
-import com.github.qpcrummer.directories.Song;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 public class WAVPlayer {
@@ -22,19 +22,17 @@ public class WAVPlayer {
     private boolean playing;
     private boolean looping;
     private final JProgressBar progressBar;
-    private final List<Song> playList;
-    private Song currentSong;
-    private int index;
-    private final JList<Song> songJList;
+    private int index = 0;
+    private final JList<Path> songJList;
     private final ListSelectionListener listener;
     private final JFrame parent;
     private final BeatManager beatManager;
     private int progressBarIndex;
     private String cachedFinalTimeStamp;
     private int songLengthSeconds;
-    public WAVPlayer(@NotNull final JProgressBar bar, final List<Song> playList, @NotNull final JList<Song> songJList, final ListSelectionListener songJListListener, final JFrame parent) {
+    private final int[] indexes;
+    public WAVPlayer(@NotNull final JProgressBar bar, @NotNull final JList<Path> songJList, final ListSelectionListener songJListListener, final JFrame parent) {
         this.progressBar = bar;
-        this.playList = playList;
         this.songJList = songJList;
         this.listener = songJListListener;
         this.parent = parent;
@@ -49,17 +47,22 @@ public class WAVPlayer {
                 progressBarIndex++;
             }
         }, 0, 1, TimeUnit.SECONDS);
+
+        this.indexes = new int[songJList.getModel().getSize()];
+        for (int i = 0; i < songJList.getModel().getSize(); i++) {
+            indexes[i] = i;
+        }
     }
 
     /**
      * Plays the selected clip
      */
-    public void play(final Song song) {
+    public void play(final int index) {
         // Create AudioInputStream and Clip Objects
-        this.currentSong = song;
+        this.index = this.indexes[index];
         this.updateSelectedValue();
-        this.parent.setTitle("Playing " + song.title);
-        final String wavPath = String.valueOf(song.path);
+        this.parent.setTitle("Playing " + this.getTitle(this.index));
+        final String wavPath = String.valueOf(this.getPath(this.index));
         try (final AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(wavPath).getAbsoluteFile())) {
             this.wavClip = AudioSystem.getClip();
             this.wavClip.open(audioInputStream);
@@ -85,7 +88,7 @@ public class WAVPlayer {
             this.playing = true;
         }
 
-        this.beatManager.readBeats(song);
+        this.beatManager.readBeats(this.getPath(this.index), this.index);
 
         // Start the Music!!!
         this.wavClip.start();
@@ -164,19 +167,24 @@ public class WAVPlayer {
      */
     public void shuffle() {
         this.reset();
-        this.index = 0;
-        Collections.shuffle(this.playList);
-        this.play(this.getCurrentSong());
+        final int length = this.indexes.length;
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        for (int i = 0; i < length; i++) {
+            int randomIndexToSwap = random.nextInt(length);
+            int temp = this.indexes[randomIndexToSwap];
+            this.indexes[randomIndexToSwap] = this.indexes[i];
+            this.indexes[i] = temp;
+        }
+        this.play(0);
     }
 
     /**
-     * Injected Song when clicked on in the JLIst
-     * @param song Song clicked on
+     * Index when clicked on in the JLIst
+     * @param index index of the song clicked on
      */
-    public void songOverride(final Song song) {
+    public void songOverride(final int index) {
         this.reset();
-        this.index = this.playList.indexOf(song);
-        this.play(song);
+        this.play(index);
     }
 
     /**
@@ -225,7 +233,7 @@ public class WAVPlayer {
      */
     private void updateSelectedValue() {
         this.songJList.removeListSelectionListener(this.listener);
-        this.songJList.setSelectedValue(this.getCurrentSong(), true);
+        this.songJList.setSelectedValue(this.getPath(this.getCurrentSong()), true);
         this.songJList.addListSelectionListener(this.listener);
     }
 
@@ -260,26 +268,24 @@ public class WAVPlayer {
     }
 
     /**
-     * Grabs the next song in the List. If it is at the end, it goes to the beginning
-     * @return Next song to play
+     * Grabs the next song's index. If it is at the end, it goes to the beginning
+     * @return Next song's index to play
      */
-    public Song getNextSong() {
-        this.index++;
-        if (this.index >= this.playList.size()) {
-            this.index = 0;
+    public int getNextSong() {
+        if (this.index >= this.indexes.length - 1) {
+            return 0;
+        } else {
+            this.index++;
+            return this.index;
         }
-        return this.playList.get(this.index);
     }
 
     /**
      * Gets the current song playing
-     * @return Returns the current song
+     * @return Returns the current song's index
      */
-    public Song getCurrentSong() {
-        if (currentSong == null) {
-            currentSong = this.playList.get(this.index);
-        }
-        return this.currentSong;
+    public int getCurrentSong() {
+        return this.index;
     }
 
     /**
@@ -302,5 +308,24 @@ public class WAVPlayer {
             newVolume = 30 * Math.log10(sliderValue) - 60;
         }
         this.volume.setValue((float) newVolume);
+    }
+
+    /**
+     * Gets the name of the Song at the specific index
+     * @param index index in songJList
+     * @return Name and Author as a String
+     */
+    public String getTitle(int index) {
+        Component renderedComponent = this.songJList.getCellRenderer().getListCellRendererComponent(this.songJList, this.songJList.getModel().getElementAt(index), index, false, false);
+        return ((JLabel) renderedComponent).getText();
+    }
+
+    /**
+     * Gets the path of the Song at the specific index
+     * @param index index in songJList
+     * @return Path
+     */
+    public Path getPath(int index) {
+        return this.songJList.getModel().getElementAt(index);
     }
 }

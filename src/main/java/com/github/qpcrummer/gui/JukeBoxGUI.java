@@ -1,6 +1,5 @@
 package com.github.qpcrummer.gui;
 
-import com.github.qpcrummer.directories.Song;
 import com.github.qpcrummer.music.WAVPlayer;
 
 import javax.swing.*;
@@ -12,16 +11,17 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.List;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class JukeBoxGUI extends JFrame {
-    private final List<Song> songs;
     private transient final WAVPlayer wavPlayer;
     private final String pauseString = "Pause";
     private final String playString = "Play";
-    public JukeBoxGUI(final List<Song> songs) {
-        this.songs = songs;
+
+    private final JList<Path> songList;
+    public JukeBoxGUI(final Path[] songs) {
+
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(final WindowEvent e) {
@@ -39,10 +39,10 @@ public class JukeBoxGUI extends JFrame {
         panel.setLayout(new BorderLayout());
 
         // Song List
-        final DefaultListModel<Song> songList = new DefaultListModel<>();
-        this.updateJList(songList);
-        final JList<Song> visibleSongList = new JList<>(songList);
-        visibleSongList.setCellRenderer(new SongListCellRenderer());
+        final DefaultListModel<Path> songList = new DefaultListModel<>();
+        this.updateJList(songList, songs);
+        this.songList = new JList<>(songList);
+        this.songList.setCellRenderer(new SongListCellRenderer());
 
         // Top Panel
         final JPanel top = new JPanel();
@@ -82,17 +82,17 @@ public class JukeBoxGUI extends JFrame {
         control.add(volumeSlider);
 
         // Scroll Pane
-        final JScrollPane musicScroll = new JScrollPane(visibleSongList);
+        final JScrollPane musicScroll = new JScrollPane(this.songList);
         panel.add(musicScroll, BorderLayout.CENTER);
         musicScroll.getVerticalScrollBar().setPreferredSize(new Dimension(30, Integer.MAX_VALUE));
 
         // WAV Player
         final AtomicReference<WAVPlayer> wavReference = new AtomicReference<>();
         final ListSelectionListener listSelectionListener = e -> {
-            wavReference.get().songOverride(visibleSongList.getSelectedValue());
+            wavReference.get().songOverride(this.songList.getSelectedIndex());
             play.setText(this.pauseString);
         };
-        this.wavPlayer = new WAVPlayer(musicBar, this.songs, visibleSongList, listSelectionListener, this);
+        this.wavPlayer = new WAVPlayer(musicBar, this.songList, listSelectionListener, this);
         wavReference.set(this.wavPlayer);
 
         // Configuration
@@ -102,9 +102,9 @@ public class JukeBoxGUI extends JFrame {
         volumeSlider.setPaintLabels(true);
         volumeSlider.setMajorTickSpacing(20);
 
-        visibleSongList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        visibleSongList.setLayoutOrientation(JList.VERTICAL);
-        visibleSongList.setFixedCellHeight(40);
+        this.songList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.songList.setLayoutOrientation(JList.VERTICAL);
+        this.songList.setFixedCellHeight(40);
 
         musicBar.setValue(0);
         musicBar.setStringPainted(true);
@@ -162,7 +162,7 @@ public class JukeBoxGUI extends JFrame {
             this.dispose();
         });
 
-        visibleSongList.addListSelectionListener(listSelectionListener);
+        this.songList.addListSelectionListener(listSelectionListener);
 
         // Finalize
         this.setMinimumSize(new Dimension(600, 400));
@@ -175,10 +175,12 @@ public class JukeBoxGUI extends JFrame {
      * Updates the JList
      * @param songJList DefaultListModel of JList
      */
-    private void updateJList(final DefaultListModel<Song> songJList) {
+    private void updateJList(final DefaultListModel<Path> songJList, final Path[] songs) {
         songJList.clear();
-        for (Song song : this.songs) {
+
+        for (Path song : songs) {
             songJList.addElement(song);
         }
     }
+
 }
