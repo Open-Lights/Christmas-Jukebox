@@ -129,7 +129,7 @@ public class NewJukeboxGUI {
     private static void setProgressBar() {
         float textWidth = GuiUtils.calcTextSize("99:99/99:99").x;
         float progressX = (width - textWidth) / 2;
-        ImGui.pushStyleColor(ImGuiCol.PlotHistogram, ImColor.intToColor(21, 66, 0));
+        ImGui.pushStyleColor(ImGuiCol.PlotHistogram, ImColor.rgb(21, 66, 0));
         ImGui.progressBar(progressBar, width, 25, "##");
         ImGui.popStyleColor(1);
         ImGui.sameLine(progressX);

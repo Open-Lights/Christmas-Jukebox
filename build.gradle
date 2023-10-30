@@ -13,7 +13,7 @@ repositories {
 dependencies {
     implementation 'com.drewnoakes:metadata-extractor:2.18.0'
     implementation 'com.diozero:diozero-core:1.3.5'
-    implementation 'io.github.spair:imgui-java-app:1.86.1'
+    implementation 'io.github.spair:imgui-java-app:1.86.11'
 }
 
 test {
