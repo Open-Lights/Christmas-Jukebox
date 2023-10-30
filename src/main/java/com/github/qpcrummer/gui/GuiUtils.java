@@ -1,6 +1,7 @@
 package com.github.qpcrummer.gui;
 
 import imgui.ImGui;
+import imgui.ImVec2;
 
 public class GuiUtils {
     /**
@@ -18,5 +19,16 @@ public class GuiUtils {
     public static void clearFontSize() {
         ImGui.getFont().setScale(1.0f);
         ImGui.popFont();
+    }
+
+    /**
+     * Calculates the height and width of the text
+     * @param text String to measure
+     * @return ImVec2 of the String
+     */
+    public static ImVec2 calcTextSize(String text) {
+        ImVec2 value = new ImVec2();
+        ImGui.calcTextSize(value, text);
+        return value;
     }
 }

@@ -42,7 +42,7 @@ public class Main extends Application {
 
     @Override
     protected void configure(Configuration config) {
-        config.setTitle("Imgui-Java-Test");
+        config.setTitle("Christmas Celebrator");
         config.setHeight(700);
         config.setWidth(700);
     }
@@ -57,6 +57,12 @@ public class Main extends Application {
             this.previousTime = currentTime;
         }
 
+    }
+
+    @Override
+    protected void disposeWindow() {
+        super.disposeWindow();
+        System.exit(1);
     }
 
     private int previousFPSValue;

@@ -9,7 +9,6 @@ import com.github.qpcrummer.Main;
 import com.github.qpcrummer.music.WAVPlayer;
 import imgui.ImColor;
 import imgui.ImGui;
-import imgui.ImVec2;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiWindowFlags;
 
@@ -31,7 +30,7 @@ public class NewJukeboxGUI {
 
     // ProgressBar variables
     public static float progressBar;
-    public static String timeStamp = "0:00";
+    public static String timeStamp = "0:00/0:00";
 
     private static boolean looping;
     private static final WAVPlayer wavPlayer = new WAVPlayer();
@@ -40,23 +39,25 @@ public class NewJukeboxGUI {
         if (!shouldRender) {
             return;
         }
+
         ImGui.begin(title, ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar);
 
         ImGui.setWindowSize(ImGui.getIO().getDisplaySizeX(), ImGui.getIO().getDisplaySizeY());
         ImGui.setWindowPos(0F, 0F);
 
+        ImGui.text(title);
+
         if (ImGui.button("Back", width, 20)) {
-            shouldRender = false;
-            NewPlaylistGUI.shouldRender = true;
+            quit();
         }
 
         ImGui.separator();
 
-        ImGui.text("List of Items");
+        ImGui.text("Song Playlist");
 
         // List of Strings
         GuiUtils.setFont(1.3F);
-        if (ImGui.beginListBox("List of Items", width, ImGui.getIO().getDisplaySizeY() * 0.75F)) {
+        if (ImGui.beginListBox("##", width, ImGui.getIO().getDisplaySizeY() * 0.75F)) {
             for (int i = 0; i < titleList.length; i++) {
                 boolean isSelected = i == selectedListItem;
                 if (ImGui.selectable(titleList[i], isSelected)) {
@@ -89,7 +90,11 @@ public class NewJukeboxGUI {
         ImGui.sameLine();
 
         if (ImGui.button("Play")) {
-            wavPlayer.resume();
+            if (wavPlayer.isPlaying()) {
+                wavPlayer.pause();
+            } else {
+                wavPlayer.resume();
+            }
         }
 
         ImGui.sameLine();
@@ -122,7 +127,7 @@ public class NewJukeboxGUI {
     }
 
     private static void setProgressBar() {
-        float textWidth = calcTextSize("99:99").x;
+        float textWidth = GuiUtils.calcTextSize("99:99/99:99").x;
         float progressX = (width - textWidth) / 2;
         ImGui.pushStyleColor(ImGuiCol.PlotHistogram, ImColor.intToColor(21, 66, 0));
         ImGui.progressBar(progressBar, width, 25, "##");
@@ -133,11 +138,7 @@ public class NewJukeboxGUI {
         GuiUtils.clearFontSize();
     }
 
-    private static ImVec2 calcTextSize(String text) {
-        ImVec2 value = new ImVec2();
-        ImGui.calcTextSize(value, text);
-        return value;
-    }
+
 
     public static void initialize(Path[] paths) {
         songPaths = paths;
@@ -148,6 +149,17 @@ public class NewJukeboxGUI {
         }
 
         wavPlayer.initialize();
+    }
+
+    public static void quit() {
+        wavPlayer.shutDown();
+        timeStamp = "0:00";
+        volume = 100.0f;
+        selectedListItem = -1;
+        title = "Christmas Celebrator";
+
+        shouldRender = false;
+        NewPlaylistGUI.shouldRender = true;
     }
 
     // Useful methods
