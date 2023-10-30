@@ -1,13 +1,10 @@
 package com.github.qpcrummer.music;
 
-import com.drew.lang.annotations.NotNull;
 import com.github.qpcrummer.Main;
 import com.github.qpcrummer.beat.BeatManager;
+import com.github.qpcrummer.gui.NewJukeboxGUI;
 
 import javax.sound.sampled.*;
-import javax.swing.*;
-import javax.swing.event.ListSelectionListener;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -21,35 +18,32 @@ public class WAVPlayer {
     private FloatControl volume;
     private boolean playing;
     private boolean looping;
-    private final JProgressBar progressBar;
     private int index = 0;
-    private final JList<Path> songJList;
-    private final ListSelectionListener listener;
-    private final JFrame parent;
     private final BeatManager beatManager;
-    private int progressBarIndex;
     private String cachedFinalTimeStamp;
+    private int progressBarIndex;
     private int songLengthSeconds;
-    private final int[] indexes;
-    public WAVPlayer(@NotNull final JProgressBar bar, @NotNull final JList<Path> songJList, final ListSelectionListener songJListListener, final JFrame parent) {
-        this.progressBar = bar;
-        this.songJList = songJList;
-        this.listener = songJListListener;
-        this.parent = parent;
+    private int[] indexes;
+    public WAVPlayer() {
         // Beats
         this.beatManager = new BeatManager(this);
 
         // ProgressBarUpdater
         this.beatManager.getBeatExecutor().scheduleAtFixedRate(() -> {
             if (isPlaying()) {
-                progressBar.setValue((progressBarIndex * 100)/ this.songLengthSeconds);
-                progressBar.setString(formatTime(progressBarIndex) + "/" + this.cachedFinalTimeStamp);
+                NewJukeboxGUI.progressBar = (float) progressBarIndex /this.songLengthSeconds;
+                NewJukeboxGUI.timeStamp = formatTime(progressBarIndex) + "/" + this.cachedFinalTimeStamp;
                 progressBarIndex++;
             }
         }, 0, 1, TimeUnit.SECONDS);
+    }
 
-        this.indexes = new int[songJList.getModel().getSize()];
-        for (int i = 0; i < songJList.getModel().getSize(); i++) {
+    /**
+     * Run this if you change "songPaths"
+     */
+    public void initialize() {
+        this.indexes = new int[NewJukeboxGUI.songPaths.length];
+        for (int i = 0; i < NewJukeboxGUI.songPaths.length; i++) {
             indexes[i] = i;
         }
     }
@@ -61,7 +55,7 @@ public class WAVPlayer {
         // Create AudioInputStream and Clip Objects
         this.index = this.indexes[index];
         this.updateSelectedValue();
-        this.parent.setTitle("Playing " + this.getTitle(this.index));
+        NewJukeboxGUI.title = "Playing " + this.getTitle(this.index);
         final String wavPath = String.valueOf(this.getPath(this.index));
         try (final AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(wavPath).getAbsoluteFile())) {
             this.wavClip = AudioSystem.getClip();
@@ -232,9 +226,7 @@ public class WAVPlayer {
      * Updates the selected index of the JList
      */
     private void updateSelectedValue() {
-        this.songJList.removeListSelectionListener(this.listener);
-        this.songJList.setSelectedValue(this.getPath(this.getCurrentSong()), true);
-        this.songJList.addListSelectionListener(this.listener);
+        NewJukeboxGUI.setSelectedSong(this.getCurrentSong());
     }
 
     // Info Methods
@@ -316,8 +308,7 @@ public class WAVPlayer {
      * @return Name and Author as a String
      */
     public String getTitle(int index) {
-        Component renderedComponent = this.songJList.getCellRenderer().getListCellRendererComponent(this.songJList, this.songJList.getModel().getElementAt(index), index, false, false);
-        return ((JLabel) renderedComponent).getText();
+        return NewJukeboxGUI.titleList[index];
     }
 
     /**
@@ -326,6 +317,6 @@ public class WAVPlayer {
      * @return Path
      */
     public Path getPath(int index) {
-        return this.songJList.getModel().getElementAt(index);
+        return NewJukeboxGUI.songPaths[index];
     }
 }
