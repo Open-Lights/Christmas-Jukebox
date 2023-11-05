@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 public class BeatManager {
     private final WAVPlayer player;
-    private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private final List<ChannelIdentifier> channels = new ArrayList<>();
     private int lastSong;
     public BeatManager(final WAVPlayer player) {
@@ -106,17 +106,13 @@ public class BeatManager {
      * Completely stops the Thread and sends it off to the GC
      */
     public void stopThread() {
-        if (executorService != null) {
-            executorService.shutdownNow();
-        }
-        // TODO This probably doesn't need to be set to null
-        executorService = null;
+        executorService.shutdownNow();
     }
 
     /**
-     * Resets the indexes of all channels
+     * Rewinds the indexes of all channels to the beginning
      */
-    public void resetBeats() {
+    public void rewindBeats() {
         if (!this.channels.isEmpty()) {
             for (ChannelIdentifier channel : channels) {
                 channel.reset();
@@ -125,10 +121,10 @@ public class BeatManager {
     }
 
     /**
-     * Gets the Beat ScheduledExecutorService so that other threads can schedule tasks
-     * @return ScheduledExecutorService
+     * Cancels all current tasks.
+     * This is usually called after the song that it was initially tracking was removed (skipped)
      */
-    public ScheduledExecutorService getBeatExecutor() {
-        return this.executorService;
+    public void resetBeats() {
+        this.channels.clear();
     }
 }

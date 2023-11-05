@@ -17,7 +17,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class NewJukeboxGUI {
     public static boolean shouldRender;
@@ -28,12 +30,9 @@ public class NewJukeboxGUI {
     public static String[] titleList;
     private static final float width = ImGui.getIO().getDisplaySizeX() - 15;
 
-    // ProgressBar variables
-    public static float progressBar;
-    public static String timeStamp = "0:00/0:00";
-
     private static boolean looping;
     private static final WAVPlayer wavPlayer = new WAVPlayer();
+    public static String cachedFormattedSongLength;
 
     public static void render() {
         if (!shouldRender) {
@@ -50,6 +49,7 @@ public class NewJukeboxGUI {
         if (ImGui.button("Back", width, 20)) {
             quit();
         }
+
 
         ImGui.separator();
 
@@ -130,12 +130,31 @@ public class NewJukeboxGUI {
         float textWidth = GuiUtils.calcTextSize("99:99/99:99").x;
         float progressX = (width - textWidth) / 2;
         ImGui.pushStyleColor(ImGuiCol.PlotHistogram, ImColor.rgb(21, 66, 0));
-        ImGui.progressBar(progressBar, width, 25, "##");
+
+        long currentPosSec = TimeUnit.MICROSECONDS.toSeconds(wavPlayer.getCurrentPosition());
+        long songLength = wavPlayer.getSongLength();
+
+        ImGui.progressBar((float) currentPosSec /songLength, width, 25, "##");
         ImGui.popStyleColor(1);
         ImGui.sameLine(progressX);
         GuiUtils.setFont(1.3F);
-        ImGui.text(timeStamp);
+
+        if (cachedFormattedSongLength == null) {
+            cachedFormattedSongLength = formatTime((int) songLength);
+        }
+
+        ImGui.text(formatTime((int) currentPosSec) + "/" + cachedFormattedSongLength);
         GuiUtils.clearFontSize();
+    }
+
+    /**
+     * Correctly format the progress bar
+     * @param seconds Current position of the song in seconds
+     * @return The formatted time
+     */
+    private static String formatTime(final int seconds) {
+        Duration duration = Duration.ofSeconds(seconds);
+        return String.format("%02d:%02d", duration.toMinutesPart(), duration.toSecondsPart());
     }
 
 
@@ -153,7 +172,6 @@ public class NewJukeboxGUI {
 
     public static void quit() {
         wavPlayer.shutDown();
-        timeStamp = "0:00";
         volume = 100.0f;
         selectedListItem = -1;
         title = "Christmas Celebrator";

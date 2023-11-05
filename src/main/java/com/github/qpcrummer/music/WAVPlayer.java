@@ -8,34 +8,22 @@ import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Calendar;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 public class WAVPlayer {
     private Clip wavClip;
     private long currentPosition;
+    private long songLength;
     private FloatControl volume;
     private boolean playing;
     private boolean looping;
     private int index = 0;
     private final BeatManager beatManager;
-    private String cachedFinalTimeStamp;
-    private int progressBarIndex;
-    private int songLengthSeconds;
     private int[] indexes;
     public WAVPlayer() {
         // Beats
         this.beatManager = new BeatManager(this);
-
-        // ProgressBarUpdater
-        this.beatManager.getBeatExecutor().scheduleAtFixedRate(() -> {
-            if (isPlaying()) {
-                NewJukeboxGUI.progressBar = (float) progressBarIndex /this.songLengthSeconds;
-                NewJukeboxGUI.timeStamp = formatTime(progressBarIndex) + "/" + this.cachedFinalTimeStamp;
-                progressBarIndex++;
-            }
-        }, 0, 1, TimeUnit.SECONDS);
     }
 
     /**
@@ -52,6 +40,7 @@ public class WAVPlayer {
      * Plays the selected clip
      */
     public void play(final int index) {
+        System.gc();
         // Create AudioInputStream and Clip Objects
         this.index = this.indexes[index];
         this.updateSelectedValue();
@@ -74,10 +63,6 @@ public class WAVPlayer {
                 }
             });
 
-            // Set data for ProgressBar
-            this.songLengthSeconds = (int) TimeUnit.MICROSECONDS.toSeconds(wavClip.getMicrosecondLength());
-            this.cachedFinalTimeStamp = formatTime(songLengthSeconds);
-
             // Set Playing True
             this.playing = true;
         }
@@ -96,6 +81,7 @@ public class WAVPlayer {
      */
     public void resume() {
         if (this.wavClip == null) {
+            reset();
             play(getCurrentSong());
             return;
         }
@@ -122,11 +108,12 @@ public class WAVPlayer {
             this.wavClip.stop();
             this.wavClip.close();
         }
-        // TODO This probably doesn't need to be set to null
-        this.wavClip = null;
+        NewJukeboxGUI.cachedFormattedSongLength = null;
         this.playing = false;
         this.currentPosition = 0L;
-        this.progressBarIndex = 0;
+        this.songLength = 0L;
+        this.looping = false;
+        this.beatManager.resetBeats();
     }
 
     /**
@@ -134,6 +121,7 @@ public class WAVPlayer {
      */
     public void shutDown() {
         reset();
+        this.index = 0;
         this.beatManager.stopThread();
     }
 
@@ -151,7 +139,6 @@ public class WAVPlayer {
     public void rewind() {
         this.pause();
         this.currentPosition = 0L;
-        this.progressBarIndex = 0;
         this.beatManager.onRewind();
         this.resume();
     }
@@ -182,39 +169,13 @@ public class WAVPlayer {
     }
 
     /**
-     * Correctly format the progress bar
-     * @param seconds Current position of the song in seconds
-     * @return The formatted time
-     */
-    private String formatTime(final int seconds) {
-        final Calendar timeFormat = new Calendar.Builder().build();
-        timeFormat.set(Calendar.SECOND, seconds);
-
-        String second;
-        if (timeFormat.get(Calendar.SECOND) <= 9) {
-            second = 0 + String.valueOf(timeFormat.get(Calendar.SECOND));
-        } else {
-            second = String.valueOf(timeFormat.get(Calendar.SECOND));
-        }
-
-        String min;
-        if (timeFormat.get(Calendar.MINUTE) <= 9) {
-            min = 0 + String.valueOf(timeFormat.get(Calendar.MINUTE));
-        } else {
-            min = String.valueOf(timeFormat.get(Calendar.MINUTE));
-        }
-        return min + ":" + second;
-    }
-
-    /**
      * Executes when a song has completed
      */
     private void onSongEnd() {
         if (this.wavClip.getFrameLength() <= this.wavClip.getLongFramePosition()) {
             if (this.looping) {
                 this.wavClip.setFramePosition(0);
-                this.beatManager.resetBeats();
-                this.progressBarIndex = 0;
+                this.beatManager.rewindBeats();
                 this.resume();
             } else {
                 this.skip();
@@ -257,6 +218,17 @@ public class WAVPlayer {
         } else {
             return this.currentPosition;
         }
+    }
+
+    /**
+     * Returns song length in seconds
+     * @return song lenght in seconds as long value
+     */
+    public long getSongLength() {
+        if (this.isPlaying()) {
+            this.songLength = TimeUnit.MICROSECONDS.toSeconds(wavClip.getMicrosecondLength());
+        }
+        return this.songLength;
     }
 
     /**
