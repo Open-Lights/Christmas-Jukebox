@@ -5,7 +5,6 @@ import com.github.qpcrummer.beat.BeatManager;
 import com.github.qpcrummer.gui.NewJukeboxGUI;
 
 import javax.sound.sampled.*;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.ThreadLocalRandom;
@@ -34,6 +33,8 @@ public class WAVPlayer {
         for (int i = 0; i < NewJukeboxGUI.songPaths.length; i++) {
             indexes[i] = i;
         }
+
+        this.beatManager.initialize();
     }
 
     /**
@@ -45,8 +46,7 @@ public class WAVPlayer {
         this.index = this.indexes[index];
         this.updateSelectedValue();
         NewJukeboxGUI.title = "Playing " + this.getTitle(this.index);
-        final String wavPath = String.valueOf(this.getPath(this.index));
-        try (final AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(wavPath).getAbsoluteFile())) {
+        try (final AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(this.getPath(this.index).toFile())) {
             this.wavClip = AudioSystem.getClip();
             this.wavClip.open(audioInputStream);
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
@@ -184,7 +184,7 @@ public class WAVPlayer {
     }
 
     /**
-     * Updates the selected index of the JList
+     * Updates the selected index of the ImList
      */
     private void updateSelectedValue() {
         NewJukeboxGUI.setSelectedSong(this.getCurrentSong());

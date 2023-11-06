@@ -108,11 +108,6 @@ public class ChannelIdentifier {
         checkIfBeat();
     }
 
-    public void shutDown() {
-        this.executor.shutdownNow();
-        this.closeAllLights();
-    }
-
     private boolean isTimeClose(final long clipPos, final long expectedPos) {
         return clipPos >= expectedPos;
     }

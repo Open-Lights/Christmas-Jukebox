@@ -16,11 +16,18 @@ import java.util.stream.Stream;
 
 public class BeatManager {
     private final WAVPlayer player;
-    private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledExecutorService executorService;
     private final List<ChannelIdentifier> channels = new ArrayList<>();
     private int lastSong;
     public BeatManager(final WAVPlayer player) {
         this.player = player;
+    }
+
+    /**
+     * Sets up the Threads for the BeatManager
+     */
+    public void initialize() {
+        this.executorService = Executors.newSingleThreadScheduledExecutor();
     }
 
     /**
