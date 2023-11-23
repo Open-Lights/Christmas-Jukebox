@@ -1,5 +1,3 @@
-import org.gradle.internal.os.OperatingSystem
-
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
@@ -7,21 +5,32 @@ plugins {
 
 project.ext.lwjglVersion = "3.3.3"
 
-switch (OperatingSystem.current()) {
-    case OperatingSystem.LINUX:
-        project.ext.lwjglNatives = "natives-linux"
-        def osArch = System.getProperty("os.arch")
-        if (osArch.startsWith("arm") || osArch.startsWith("aarch64")) {
-            project.ext.lwjglNatives += osArch.contains("64") || osArch.startsWith("armv8") ? "-arm64" : "-arm32"
-        } else if  (osArch.startsWith("ppc")) {
-            project.ext.lwjglNatives += "-ppc64le"
-        } else if  (osArch.startsWith("riscv")) {
-            project.ext.lwjglNatives += "-riscv64"
+// Define a list of architectures for which you want to build JARs
+def architectures = ['natives-linux-arm64']
+
+architectures.each { architecture ->
+    configure("${architecture}") {
+
+        dependencies {
+            runtimeOnly "org.lwjgl:lwjgl:${architecture}"
+            runtimeOnly "org.lwjgl:lwjgl-assimp:${architecture}"
+            runtimeOnly "org.lwjgl:lwjgl-egl:${architecture}"
+            runtimeOnly "org.lwjgl:lwjgl-glfw:${architecture}"
+            runtimeOnly "org.lwjgl:lwjgl-openal:${architecture}"
+            runtimeOnly "org.lwjgl:lwjgl-opengles:${architecture}"
+            runtimeOnly "org.lwjgl:lwjgl-stb:${architecture}"
         }
-        break
-    case OperatingSystem.WINDOWS:
-        project.ext.lwjglNatives = "natives-windows"
-        break
+
+        shadowJar {
+            archiveBaseName.set("${project.name}-${architecture}")
+            manifest {
+                attributes(
+                        'Main-Class': 'com.github.qpcrummer.Main'
+                )
+            }
+            minimize()
+        }
+    }
 }
 
 group 'com.github.qpcrummer'
@@ -35,34 +44,8 @@ dependencies {
     implementation 'com.drewnoakes:metadata-extractor:2.18.0'
     implementation 'com.diozero:diozero-core:1.3.5'
     implementation 'io.github.spair:imgui-java-app:1.86.11'
-
-    //LWJGL
-    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
-
-    implementation "org.lwjgl:lwjgl"
-    implementation "org.lwjgl:lwjgl-assimp"
-    implementation "org.lwjgl:lwjgl-egl"
-    implementation "org.lwjgl:lwjgl-glfw"
-    implementation "org.lwjgl:lwjgl-openal"
-    implementation "org.lwjgl:lwjgl-opengles"
-    implementation "org.lwjgl:lwjgl-stb"
-    runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-opengles::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
 }
 
 test {
     useJUnitPlatform()
-}
-
-shadowJar {
-    manifest {
-        attributes(
-                'Main-Class': 'com.github.qpcrummer.Main'
-        )
-    }
-    minimize()
 }
