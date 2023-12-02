@@ -1,36 +1,12 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
-project.ext.lwjglVersion = "3.3.3"
-
-// Define a list of architectures for which you want to build JARs
-def architectures = ['natives-linux-arm64']
-
-architectures.each { architecture ->
-    configure("${architecture}") {
-
-        dependencies {
-            runtimeOnly "org.lwjgl:lwjgl:${architecture}"
-            runtimeOnly "org.lwjgl:lwjgl-assimp:${architecture}"
-            runtimeOnly "org.lwjgl:lwjgl-egl:${architecture}"
-            runtimeOnly "org.lwjgl:lwjgl-glfw:${architecture}"
-            runtimeOnly "org.lwjgl:lwjgl-openal:${architecture}"
-            runtimeOnly "org.lwjgl:lwjgl-opengles:${architecture}"
-            runtimeOnly "org.lwjgl:lwjgl-stb:${architecture}"
-        }
-
-        shadowJar {
-            archiveBaseName.set("${project.name}-${architecture}")
-            manifest {
-                attributes(
-                        'Main-Class': 'com.github.qpcrummer.Main'
-                )
-            }
-            minimize()
-        }
-    }
+jar {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+    manifest {
+        attributes 'Main-Class': 'com.github.qpcrummer.Main'
+    } from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
 }
 
 group 'com.github.qpcrummer'
@@ -38,12 +14,13 @@ version '1.0.0'
 
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
     implementation 'com.drewnoakes:metadata-extractor:2.18.0'
     implementation 'com.diozero:diozero-core:1.3.5'
-    implementation 'io.github.spair:imgui-java-app:1.86.11'
+    implementation 'com.github.QPCrummer:imgui-java:ca9adeffb8'
 }
 
 test {
