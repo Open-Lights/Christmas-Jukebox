@@ -15,12 +15,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Stream;
 
 public class BeatManager {
-    private final WAVPlayer player;
     private ScheduledExecutorService executorService;
     private final List<ChannelIdentifier> channels = new ArrayList<>();
     private int lastSong;
-    public BeatManager(final WAVPlayer player) {
-        this.player = player;
+    public BeatManager() {
     }
 
     /**
@@ -73,7 +71,7 @@ public class BeatManager {
                     beats.add(Long.parseLong(line, 16));
                 }
             }
-            channels.add(new ChannelIdentifier(filePath.toFile().getName(), beats, this.executorService, this.player));
+            channels.add(new ChannelIdentifier(filePath.toFile().getName(), beats, this.executorService));
         } catch (IOException e) {
             Main.logger.warning("Failed to read beats from File: " + filePath);
         }

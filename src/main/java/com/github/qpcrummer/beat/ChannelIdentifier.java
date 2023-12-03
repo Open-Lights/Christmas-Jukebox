@@ -14,15 +14,13 @@ public class ChannelIdentifier {
     public final int[] channels;
     public final List<Object> beats;
     private final ScheduledExecutorService executor;
-    private final WAVPlayer player;
     private boolean isSleeping;
     private int index;
     //private final LED[] controller;
-    public ChannelIdentifier(final String fileName, final List<Object> beats, final ScheduledExecutorService executor, final WAVPlayer player) {
+    public ChannelIdentifier(final String fileName, final List<Object> beats, final ScheduledExecutorService executor) {
         this.channels = extractIntArray(fileName);
         this.beats = beats;
         this.executor = executor;
-        this.player = player;
         //this.controller = new LED[this.channels.length];
         //for (int i = 0; i < channels.length; i++) {
         //    controller[i] = new LED(channels[i]);
@@ -51,7 +49,7 @@ public class ChannelIdentifier {
      * If the channel is waiting for an execution, it will execute
      */
     public void checkIfBeat() {
-        if (!isSleeping && this.player.isPlaying()) {
+        if (!isSleeping && WAVPlayer.isPlaying()) {
             if (index >= beats.size()) {
                 return;
             }
@@ -66,9 +64,9 @@ public class ChannelIdentifier {
                 holdDuration = 0;
                 beat = (long)preBeat;
             }
-            final int difference = (int) ((beat - player.getWavClip().getMicrosecondPosition()) / 1000);
+            final int difference = (int) ((beat - WAVPlayer.getWavClip().getMicrosecondPosition()) / 1000);
 
-            if (this.isTimeClose(this.player.getWavClip().getMicrosecondPosition(), beat)) {
+            if (this.isTimeClose(WAVPlayer.getWavClip().getMicrosecondPosition(), beat)) {
                 this.scheduleLEDTask(holdDuration);
             }
 
@@ -102,7 +100,7 @@ public class ChannelIdentifier {
             time = (long)currentBeat;
         }
 
-        if (time <= this.player.getCurrentPosition()) {
+        if (time <= WAVPlayer.getCurrentPosition()) {
             index++;
         }
         checkIfBeat();

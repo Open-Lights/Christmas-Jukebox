@@ -11,6 +11,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 public class WAVPlayer {
+
     private static Clip wavClip;
     private static long currentPosition;
     private static long songLength;
@@ -18,19 +19,16 @@ public class WAVPlayer {
     private static boolean playing;
     private static boolean looping;
     private static int index1 = 0;
-    private static BeatManager beatManager;
+    private static final BeatManager beatManager = new BeatManager();
     private static int[] indexes;
-    public WAVPlayer() {
-        // Beats
-        beatManager = new BeatManager(this);
-    }
+    public static Path[] songPaths;
 
     /**
      * Run this if you change "songPaths"
      */
     public static void initialize() {
-        indexes = new int[NewJukeboxGUI.songPaths.length];
-        for (int i = 0; i < NewJukeboxGUI.songPaths.length; i++) {
+        indexes = new int[songPaths.length];
+        for (int i = 0; i < songPaths.length; i++) {
             indexes[i] = i;
         }
 
@@ -44,8 +42,11 @@ public class WAVPlayer {
         System.gc();
         // Create AudioInputStream and Clip Objects
         index1 = indexes[index];
-        updateSelectedValue();
-        NewJukeboxGUI.title = "Playing " + getTitle(index1);
+        // Disable GUI code in CLI mode
+        if (!Main.cli) {
+            updateSelectedValue();
+            NewJukeboxGUI.title = "Playing " + getTitle(index1);
+        }
         try (final AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getPath(index1).toFile())) {
             wavClip = AudioSystem.getClip();
             wavClip.open(audioInputStream);
@@ -110,14 +111,6 @@ public class WAVPlayer {
         return true;
     }
 
-    public static boolean togglePlaying() {
-        if (playing) {
-            return pause();
-        } else {
-            return resume();
-        }
-    }
-
     /**
      * Cancels and resets the audio clip
      */
@@ -126,7 +119,9 @@ public class WAVPlayer {
             wavClip.stop();
             wavClip.close();
         }
-        NewJukeboxGUI.cachedFormattedSongLength = null;
+        if (!Main.cli) {
+            NewJukeboxGUI.cachedFormattedSongLength = null;
+        }
         playing = false;
         currentPosition = 0L;
         songLength = 0L;
@@ -149,6 +144,9 @@ public class WAVPlayer {
     public static void skip() {
         reset();
         play(getNextSong());
+        if (!Main.cli) {
+            NewJukeboxGUI.cachedFormattedSongLength = null;
+        }
     }
 
     /**
@@ -219,6 +217,15 @@ public class WAVPlayer {
     }
 
     /**
+     * Toggles the looping boolean
+     * @return looping boolean
+     */
+    public static boolean toggleLooping() {
+        looping = !looping;
+        return looping;
+    }
+
+    /**
      * Checks if a WAV file is playing
      * @return if WAV is playing
      */
@@ -240,7 +247,7 @@ public class WAVPlayer {
 
     /**
      * Returns song length in seconds
-     * @return song lenght in seconds as long value
+     * @return song length in seconds as long value
      */
     public static long getSongLength() {
         if (isPlaying()) {
@@ -280,9 +287,14 @@ public class WAVPlayer {
 
     /**
      * Calculates the volume based on slider
-     * @param sliderValue JSlider value
+     * @param sliderValue ImGUI Slider value
      */
     public static void calcVolume(final double sliderValue) {
+        if (volume == null) {
+            Main.logger.warning("Volume cannot be set if a song is not loaded");
+            return;
+        }
+
         double newVolume;
         if (sliderValue == 0) {
             newVolume = -80;
@@ -292,9 +304,13 @@ public class WAVPlayer {
         volume.setValue((float) newVolume);
     }
 
+    public static double getVolume() {
+        return volume.getValue();
+    }
+
     /**
      * Gets the name of the Song at the specific index
-     * @param index index in songJList
+     * @param index index in song List
      * @return Name and Author as a String
      */
     public static String getTitle(int index) {
@@ -303,10 +319,10 @@ public class WAVPlayer {
 
     /**
      * Gets the path of the Song at the specific index
-     * @param index index in songJList
+     * @param index index in song List
      * @return Path
      */
     public static Path getPath(int index) {
-        return NewJukeboxGUI.songPaths[index];
+        return songPaths[index];
     }
 }

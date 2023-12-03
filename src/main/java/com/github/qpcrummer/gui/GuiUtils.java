@@ -3,7 +3,7 @@ package com.github.qpcrummer.gui;
 import imgui.ImGui;
 import imgui.ImVec2;
 
-public class GuiUtils {
+public final class GuiUtils {
     /**
      * Sets the font size. Make sure you run clearFontSize afterward!
      * @param fontSize float font size (default 1.0f)
