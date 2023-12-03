@@ -31,7 +31,6 @@ public class NewJukeboxGUI {
     private static final float width = ImGui.getIO().getDisplaySizeX() - 15;
 
     private static boolean looping;
-    private static final WAVPlayer wavPlayer = new WAVPlayer();
     public static String cachedFormattedSongLength;
 
     public static void render() {
@@ -62,7 +61,7 @@ public class NewJukeboxGUI {
                 boolean isSelected = i == selectedListItem;
                 if (ImGui.selectable(titleList[i], isSelected)) {
                     selectedListItem = i;
-                    wavPlayer.songOverride(i);
+                    WAVPlayer.songOverride(i);
                 }
             }
             ImGui.endListBox();
@@ -78,36 +77,36 @@ public class NewJukeboxGUI {
         ImGui.beginGroup();
 
         if (ImGui.button("Shuffle")) {
-            wavPlayer.shuffle();
+            WAVPlayer.shuffle();
         }
 
         ImGui.sameLine();
 
         if (ImGui.button("Skip")) {
-            wavPlayer.skip();
+            WAVPlayer.skip();
         }
 
         ImGui.sameLine();
 
         if (ImGui.button("Play")) {
-            if (wavPlayer.isPlaying()) {
-                wavPlayer.pause();
+            if (WAVPlayer.isPlaying()) {
+                WAVPlayer.pause();
             } else {
-                wavPlayer.resume();
+                WAVPlayer.resume();
             }
         }
 
         ImGui.sameLine();
 
         if (ImGui.button("Rewind")) {
-            wavPlayer.rewind();
+            WAVPlayer.rewind();
         }
 
         ImGui.sameLine();
 
         if (ImGui.checkbox("Loop", looping)) {
             looping = !looping;
-            wavPlayer.setLooping(looping);
+            WAVPlayer.setLooping(looping);
         }
 
         ImGui.text("Volume");
@@ -118,7 +117,7 @@ public class NewJukeboxGUI {
 
         if (ImGui.sliderFloat("##Volume", volumeArray, 0.0f, 100.0f, "%.1f")) {
             volume = volumeArray[0];
-            wavPlayer.calcVolume(volume);
+            WAVPlayer.calcVolume(volume);
         }
 
         ImGui.endGroup();
@@ -131,8 +130,8 @@ public class NewJukeboxGUI {
         float progressX = (width - textWidth) / 2;
         ImGui.pushStyleColor(ImGuiCol.PlotHistogram, ImColor.rgb(21, 66, 0));
 
-        long currentPosSec = TimeUnit.MICROSECONDS.toSeconds(wavPlayer.getCurrentPosition());
-        long songLength = wavPlayer.getSongLength();
+        long currentPosSec = TimeUnit.MICROSECONDS.toSeconds(WAVPlayer.getCurrentPosition());
+        long songLength = WAVPlayer.getSongLength();
 
         ImGui.progressBar((float) currentPosSec /songLength, width, 25, "##");
         ImGui.popStyleColor(1);
@@ -167,11 +166,11 @@ public class NewJukeboxGUI {
             titleList[i] = getTitle(songPaths[i]);
         }
 
-        wavPlayer.initialize();
+        WAVPlayer.initialize();
     }
 
     public static void quit() {
-        wavPlayer.shutDown();
+        WAVPlayer.shutDown();
         volume = 100.0f;
         selectedListItem = -1;
         title = "Christmas Celebrator";
@@ -185,7 +184,7 @@ public class NewJukeboxGUI {
         selectedListItem = index;
     }
 
-    private static String getTitle(Path path) {
+    public static String getTitle(Path path) {
         final File file = new File(String.valueOf(path));
         return file.getName().replace(".wav", "").replace("_", " ") + " by " + getAuthor(path);
     }

@@ -1,5 +1,6 @@
 package com.github.qpcrummer;
 
+import com.github.qpcrummer.cui.ConsoleReader;
 import com.github.qpcrummer.directories.Directories;
 import com.github.qpcrummer.gui.NewJukeboxGUI;
 import com.github.qpcrummer.gui.NewPlaylistGUI;
@@ -8,6 +9,9 @@ import imgui.ImVec2;
 import imgui.app.Application;
 import imgui.app.Configuration;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public class Main extends Application {
@@ -17,9 +21,20 @@ public class Main extends Application {
     private int mouseActivityCountdown;
     private final ImVec2 previousMousePos = new ImVec2();
     public static final Logger logger = Logger.getLogger("Christmas Celebrator");
+    private static boolean cli;
 
     public static void main(String[] args) {
-        launch(new Main());
+        for (String string : args) {
+            if (string.equals("cui")) {
+                logger.info("Launching in CUI mode; Type 'help' for a list of commands");
+                cli = true;
+                Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(ConsoleReader::new, 0, 1, TimeUnit.SECONDS);
+            }
+        }
+
+        if (!cli) {
+            launch(new Main());
+        }
     }
     @Override
     protected void preRun() {

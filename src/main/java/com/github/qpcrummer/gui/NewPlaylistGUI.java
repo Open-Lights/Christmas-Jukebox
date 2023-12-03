@@ -16,8 +16,8 @@ import java.util.stream.StreamSupport;
 
 public class NewPlaylistGUI {
     public static boolean shouldRender = true;
-    private static final List<Path> playlists = listPlaylists();
-    private static final boolean[] selectedPlaylists = new boolean[playlists.size()];
+    public static final List<Path> playlists = listPlaylists();
+    public static final boolean[] selectedPlaylists = new boolean[playlists.size()];
 
     public static void render() {
         if (!shouldRender) {
@@ -68,7 +68,7 @@ public class NewPlaylistGUI {
         return paths.toArray(new Path[0]);
     }
 
-    private static Path[] combinePlayLists() {
+    public static Path[] combinePlayLists() {
         final List<Path> combined = new ArrayList<>();
         for (Path path : getSelectedPlaylists()) {
             combined.addAll(Arrays.asList(createSongArrayList(path)));
