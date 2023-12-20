@@ -88,7 +88,8 @@ public class BeatManager {
             }
 
             this.executorService.scheduleAtFixedRate(() -> {
-                long currentPos = WAVPlayer.getCurrentPosition();
+                long currentPos = WAVPlayer.getCurrentPositionLessAccurate();
+
                 for (Channel channel : this.channels) {
                     channel.beatCheck(currentPos);
                 }

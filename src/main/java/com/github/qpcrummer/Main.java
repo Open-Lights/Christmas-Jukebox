@@ -25,10 +25,12 @@ public class Main extends Application {
     public static final String newLine = System.getProperty("line.separator");
 
     public static void main(String[] args) {
+        logger.info("Readying lights");
+        LightUtils.readyLights();
+
         for (String string : args) {
             if (string.equals("cli")) {
                 logger.info("Launching in CUI mode; Type 'help' for a list of commands");
-                LightUtils.readyLights();
                 cli = true;
                 Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(ConsoleReader::new, 0, 1, TimeUnit.SECONDS);
             }

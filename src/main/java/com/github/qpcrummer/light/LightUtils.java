@@ -24,7 +24,7 @@ public final class LightUtils {
 
     public static void blinkLED(int channel, long holdTime) {
         leds[channel].off();
-        executor.schedule(() -> leds[channel].on(), holdTime, TimeUnit.MILLISECONDS);
+        executor.schedule(() -> leds[channel].on(), holdTime, TimeUnit.MICROSECONDS);
     }
 
     /**

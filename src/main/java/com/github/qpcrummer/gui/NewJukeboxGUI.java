@@ -117,7 +117,7 @@ public class NewJukeboxGUI {
         float progressX = (width - textWidth) / 2;
         ImGui.pushStyleColor(ImGuiCol.PlotHistogram, ImColor.rgb(21, 66, 0));
 
-        long currentPosSec = TimeUnit.MICROSECONDS.toSeconds(WAVPlayer.getCurrentPosition());
+        long currentPosSec = TimeUnit.MICROSECONDS.toSeconds(WAVPlayer.getCurrentPositionLessAccurate());
         long songLength = WAVPlayer.getSongLength();
 
         ImGui.progressBar((float) currentPosSec /songLength, width, 25, "##");

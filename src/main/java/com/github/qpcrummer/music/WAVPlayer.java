@@ -7,13 +7,13 @@ import com.github.qpcrummer.gui.NewJukeboxGUI;
 import javax.sound.sampled.*;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class WAVPlayer {
 
     private static Clip wavClip;
-    private static long currentPosition;
+    private static final AtomicLong currentPosition = new AtomicLong();
     private static long songLength;
     private static FloatControl volume;
     private static boolean playing;
@@ -22,6 +22,7 @@ public class WAVPlayer {
     private static final BeatManager beatManager = new BeatManager();
     private static int[] indexes;
     public static Path[] songPaths;
+    private static final ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor();
 
     /**
      * Run this if you change "songPaths"
@@ -33,6 +34,7 @@ public class WAVPlayer {
         }
 
         beatManager.initialize();
+        initTimer();
     }
 
     /**
@@ -54,7 +56,13 @@ public class WAVPlayer {
             Main.logger.warning("AudioSystem failed to start!");
         }
         // Set Volume
-        volume = (FloatControl) wavClip.getControl(FloatControl.Type.MASTER_GAIN);
+        if (volume != null) {
+            float value = getVolume();
+            volume = (FloatControl) wavClip.getControl(FloatControl.Type.MASTER_GAIN);
+            volume.setValue(value);
+        } else {
+            volume = (FloatControl) wavClip.getControl(FloatControl.Type.MASTER_GAIN);
+        }
 
         if (!playing) {
             // Add song finished listener
@@ -69,6 +77,9 @@ public class WAVPlayer {
         }
 
         beatManager.readBeats(getPath(index1), index1);
+
+        // Cache song length
+        songLength = TimeUnit.MICROSECONDS.toSeconds(wavClip.getMicrosecondLength());
 
         // Start the Music!!!
         wavClip.start();
@@ -89,7 +100,7 @@ public class WAVPlayer {
             reset();
             play(getCurrentSong());
         } else {
-            wavClip.setMicrosecondPosition(currentPosition);
+            wavClip.setMicrosecondPosition(currentPosition.get());
             wavClip.start();
             playing = true;
         }
@@ -104,9 +115,9 @@ public class WAVPlayer {
             return false;
         }
 
-        currentPosition = wavClip.getMicrosecondPosition();
-        wavClip.stop();
         playing = false;
+        currentPosition.set(wavClip.getMicrosecondPosition());
+        wavClip.stop();
         return true;
     }
 
@@ -122,7 +133,7 @@ public class WAVPlayer {
             NewJukeboxGUI.cachedFormattedSongLength = null;
         }
         playing = false;
-        currentPosition = 0L;
+        currentPosition.set(0);
         songLength = 0L;
         looping = false;
         beatManager.resetBeats();
@@ -153,7 +164,7 @@ public class WAVPlayer {
      */
     public static void rewind() {
         pause();
-        currentPosition = 0L;
+        currentPosition.set(0);
         resume();
     }
 
@@ -171,6 +182,17 @@ public class WAVPlayer {
             indexes[i] = temp;
         }
         play(0);
+    }
+
+    /**
+     * Starts the currentPosition timer
+     */
+    private static void initTimer() {
+        timer.scheduleAtFixedRate(() -> {
+            if (isPlaying()) {
+                currentPosition.getAndAdd(10000);
+            }
+        }, 0, 10, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -231,15 +253,11 @@ public class WAVPlayer {
     }
 
     /**
-     * Gets the current position of a paused song
+     * Gets the current position, but it may be a few microseconds behind
      * @return current position as a long
      */
-    public static long getCurrentPosition() {
-        if (isPlaying()) {
-            return getWavClip().getMicrosecondPosition();
-        } else {
-            return currentPosition;
-        }
+    public static long getCurrentPositionLessAccurate() {
+        return  currentPosition.get();
     }
 
     /**
@@ -247,9 +265,6 @@ public class WAVPlayer {
      * @return song length in seconds as long value
      */
     public static long getSongLength() {
-        if (isPlaying()) {
-            songLength = TimeUnit.MICROSECONDS.toSeconds(wavClip.getMicrosecondLength());
-        }
         return songLength;
     }
 
@@ -275,14 +290,6 @@ public class WAVPlayer {
     }
 
     /**
-     * Gets the current Clip playing
-     * @return Returns current Clip
-     */
-    public static Clip getWavClip() {
-        return wavClip;
-    }
-
-    /**
      * Calculates the volume based on slider
      * @param sliderValue ImGUI Slider value
      */
@@ -301,7 +308,7 @@ public class WAVPlayer {
         volume.setValue((float) newVolume);
     }
 
-    public static double getVolume() {
+    public static float getVolume() {
         return volume.getValue();
     }
 

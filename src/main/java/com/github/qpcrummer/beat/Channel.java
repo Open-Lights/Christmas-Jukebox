@@ -61,9 +61,6 @@ public class Channel {
     }
 
     public void event() {
-
-        System.out.println("Beat: " + index);
-
         if (beats.get(index) instanceof long[] array) {
             int holdDuration = (int) (array[1] - array[0]);
             for (int channel : this.channels) {
