@@ -92,7 +92,6 @@ public class WAVPlayer {
             wavClip.setMicrosecondPosition(currentPosition);
             wavClip.start();
             playing = true;
-            beatManager.onResume();
         }
         return true;
     }
@@ -155,7 +154,6 @@ public class WAVPlayer {
     public static void rewind() {
         pause();
         currentPosition = 0L;
-        beatManager.onRewind();
         resume();
     }
 
@@ -191,7 +189,6 @@ public class WAVPlayer {
         if (wavClip.getFrameLength() <= wavClip.getLongFramePosition()) {
             if (looping) {
                 wavClip.setFramePosition(0);
-                beatManager.rewindBeats();
                 resume();
             } else {
                 skip();

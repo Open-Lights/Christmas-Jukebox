@@ -1,6 +1,7 @@
 package com.github.qpcrummer.cli;
 
 import com.github.qpcrummer.Main;
+import com.github.qpcrummer.light.LightUtils;
 import com.github.qpcrummer.music.MusicUtils;
 import com.github.qpcrummer.music.WAVPlayer;
 
@@ -61,6 +62,11 @@ public class ConsoleReader {
                     - info: Gets information about the current song
                     - list song | playlist: Lists all songs or playlists
                     - load song | playlist: Loads the song or playlist
+                    
+                                Testing
+                    - blink <channel>
+                    - allon
+                    - alloff
                     """);
             case "info" -> Main.logger.info("\nSong: " + MusicUtils.getTitle(WAVPlayer.getPath(WAVPlayer.getCurrentSong())) + "\nIndex: " + WAVPlayer.getCurrentSong() + "\nLength: " + MusicUtils.formatTime((int) WAVPlayer.getSongLength()) + "\nVolume: " + WAVPlayer.getVolume());
             case "loop" -> {
@@ -104,7 +110,19 @@ public class ConsoleReader {
                 WAVPlayer.shuffle();
                 Main.logger.info("Songs shuffled");
             }
+            case "allon" -> {
+                LightUtils.allOn();
+                Main.logger.info("All Lights On");
+            }
+            case "alloff" -> {
+                LightUtils.allOff();
+                Main.logger.info("All Lights Off");
+            }
             // Multi-string functions
+            case "blink" -> {
+                LightUtils.blinkLED(nextInt());
+                Main.logger.info("Light Blinks For 2 Seconds");
+            }
             case "volume" -> {
                 WAVPlayer.calcVolume(nextDouble());
                 Main.logger.info("Setting new volume");

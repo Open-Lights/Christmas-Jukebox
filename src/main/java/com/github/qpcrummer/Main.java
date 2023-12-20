@@ -4,6 +4,7 @@ import com.github.qpcrummer.cli.ConsoleReader;
 import com.github.qpcrummer.directories.Directories;
 import com.github.qpcrummer.gui.NewJukeboxGUI;
 import com.github.qpcrummer.gui.NewPlaylistGUI;
+import com.github.qpcrummer.light.LightUtils;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.app.Application;
@@ -27,6 +28,7 @@ public class Main extends Application {
         for (String string : args) {
             if (string.equals("cli")) {
                 logger.info("Launching in CUI mode; Type 'help' for a list of commands");
+                LightUtils.readyLights();
                 cli = true;
                 Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(ConsoleReader::new, 0, 1, TimeUnit.SECONDS);
             }

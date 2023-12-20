@@ -12,11 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 public class BeatManager {
     private ScheduledExecutorService executorService;
-    private final List<ChannelIdentifier> channels = new ArrayList<>();
+    private final List<Channel> channels = new ArrayList<>();
     private int lastSong;
     public BeatManager() {
     }
@@ -25,7 +26,7 @@ public class BeatManager {
      * Sets up the Threads for the BeatManager
      */
     public void initialize() {
-        this.executorService = Executors.newSingleThreadScheduledExecutor();
+        this.executorService = Executors.newScheduledThreadPool(1);
     }
 
     /**
@@ -64,65 +65,43 @@ public class BeatManager {
 
                     final long[] longArray = new long[elements.length];
                     for (int i = 0; i < elements.length; i++) {
-                        longArray[i] = Long.parseLong(elements[i], 16);
+                        longArray[i] = Long.parseLong(elements[i]);
                     }
                     beats.add(longArray);
                 } else {
-                    beats.add(Long.parseLong(line, 16));
+                    beats.add(Long.parseLong(line));
                 }
             }
-            channels.add(new ChannelIdentifier(filePath.toFile().getName(), beats, this.executorService));
+            channels.add(new Channel(filePath.toFile().getName(), beats));
         } catch (IOException e) {
             Main.logger.warning("Failed to read beats from File: " + filePath);
         }
     }
 
     /**
-     * Starts testing for beats every ms
+     * Starts testing for beats every 25 ms
      */
     public void startBeatTracking() {
         if (!this.channels.isEmpty()) {
-            for (ChannelIdentifier channel : channels) {
-                channel.checkIfBeat();
+            for (Channel channel : this.channels) {
+                channel.reset();
             }
+
+            this.executorService.scheduleAtFixedRate(() -> {
+                long currentPos = WAVPlayer.getCurrentPosition();
+                for (Channel channel : this.channels) {
+                    channel.beatCheck(currentPos);
+                }
+            }, 0, 25, TimeUnit.MILLISECONDS);
         }
     }
 
-    /**
-     * Called when the song is resumed
-     */
-    public void onResume() {
-        for (ChannelIdentifier channel : this.channels) {
-            channel.resume();
-        }
-    }
-
-
-    /**
-     * Called when the song is rewound
-     */
-    public void onRewind() {
-        for (ChannelIdentifier channel : this.channels) {
-            channel.reset();
-        }
-    }
 
     /**
      * Completely stops the Thread and sends it off to the GC
      */
     public void stopThread() {
         executorService.shutdownNow();
-    }
-
-    /**
-     * Rewinds the indexes of all channels to the beginning
-     */
-    public void rewindBeats() {
-        if (!this.channels.isEmpty()) {
-            for (ChannelIdentifier channel : channels) {
-                channel.reset();
-            }
-        }
     }
 
     /**
