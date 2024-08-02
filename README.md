@@ -1,3 +1,5 @@
+## **Superceeded by [OpenLightsCore](https://github.com/Open-Lights/OpenLightsCore)**
+
 # Christmas-Jukebox
 Sounds and sights of Christmas
 
