@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id "application"
 }
 
 jar {
@@ -12,17 +14,35 @@ jar {
 group 'com.github.qpcrummer'
 version '1.0.0'
 
+application {
+    mainClassName = 'com.github.qpcrummer.Main'
+}
+
 repositories {
     mavenCentral()
     maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    implementation 'com.drewnoakes:metadata-extractor:2.18.0'
-    implementation 'com.diozero:diozero-core:1.3.5'
+    implementation 'com.drewnoakes:metadata-extractor:2.19.0'
+    implementation 'com.diozero:diozero-core:1.4.0'
     implementation 'com.github.QPCrummer:imgui-java:ca9adeffb8'
 }
 
 test {
     useJUnitPlatform()
+}
+
+shadowJar {
+    manifest {
+        attributes(
+                'Main-Class': 'com.github.qpcrummer.beatmaker.Main'
+        )
+    }
+    archiveClassifier.set('')
+    archiveVersion.set('')
+}
+
+tasks.register('printVersionName') {
+    println version
 }

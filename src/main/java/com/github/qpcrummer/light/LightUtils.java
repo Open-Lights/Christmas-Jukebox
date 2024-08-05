@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 public final class LightUtils {
     private static final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    private static final int TOTAL_CHANNELS = 12;
+    private static final int TOTAL_CHANNELS = 16;
     private static final LED[] leds = new LED[TOTAL_CHANNELS];
     public static void readyLights() {
         for (int i = 0; i < TOTAL_CHANNELS; i++) {

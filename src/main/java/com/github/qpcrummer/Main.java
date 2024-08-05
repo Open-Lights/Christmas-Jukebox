@@ -22,7 +22,7 @@ public class Main extends Application {
     private final ImVec2 previousMousePos = new ImVec2();
     public static final Logger logger = Logger.getLogger("Christmas Celebrator");
     public static boolean cli;
-    public static final String newLine = System.getProperty("line.separator");
+    public static final String newLine = System.lineSeparator();
 
     public static void main(String[] args) {
         logger.info("Readying lights");
